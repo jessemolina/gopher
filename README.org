@@ -1,5 +1,7 @@
-#+title: Go Examples 
+#+title: Gopher
 
 [[https://i.postimg.cc/qqs2P8dN/logo.png]]
 
-A collection of examples for learning concepts and techniques in [[https://go.dev/learn/][Go]].
+A collection of code, docs, examples, and tools for learning [[https://go.dev/learn/][Go]].
+
+About the [[https://go.dev/blog/gopher][gopher]].
