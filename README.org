@@ -1,5 +1,5 @@
-#+title: Go Examples
+#+title: Go Examples 
 
-A collection of examples for learning Go concepts and techniques.
+[[https://i.postimg.cc/LXdp7Rsy/logo.png]]
 
-[[https://i.postimg.cc/8C4QzWk6/logo.png]]
+A collection of examples for learning concepts and techniques in [[https://go.dev/learn/][Go]].
