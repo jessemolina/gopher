@@ -15,6 +15,7 @@ type testConfig struct {
 	err      error    // expected error
 }
 
+// Test function for DotProduct
 func TestDotProduct(t *testing.T) {
 	// Collection of test configurations
 	tests := []testConfig{
