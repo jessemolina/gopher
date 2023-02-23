@@ -4,14 +4,17 @@ import (
 	"testing"
 )
 
+// Formated error message for failed tests.
 var message = "\nResults:\t %v\nExpected:\t %v\n"
 
+// Configuration for tests.
 type testConfig struct {
 	params   []vector // array of vectors to cross multiply
 	expected float64  // product of vector multiplication is a scalar
 }
 
 func TestDotProduct(t *testing.T) {
+	// Collection of test configurations
 	tests := []testConfig{
 		{
 			params:   []vector{{1, 2, 3}, {1, 2, 3}}, // Basic
@@ -31,6 +34,7 @@ func TestDotProduct(t *testing.T) {
 		},
 	}
 
+	// Loop through test and confirm results match expected.
 	for _, test := range tests {
 		results := DotProduct(test.params[0], test.params[1])
 		if results != test.expected {
