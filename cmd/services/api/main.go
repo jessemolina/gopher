@@ -2,12 +2,20 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+
+	"github.com/jessemolina/gopher/cmd/services/api/handlers"
 )
 
 var build = "dev"
+
+type config struct {
+	port int
+}
 
 func main() {
 
@@ -18,7 +26,6 @@ func main() {
 		log.Println("run error")
 		os.Exit(1)
 	}
-
 }
 
 func run() error {
@@ -29,6 +36,24 @@ func run() error {
 	// Log service start up.
 	log.Println("starting service", build)
 	defer log.Println("service ended")
+
+	// ================================================================
+	// DEBUG API
+
+	// TODO make config dynamic for cli input
+	cfg := config{
+		port: 4000,
+	}
+
+	// ================================================================
+	// DEBUG API
+
+	debugMux := handlers.DebugMux()
+	addr := ":" + strconv.Itoa(cfg.port)
+
+	if err := http.ListenAndServe(addr, debugMux); err != nil {
+		log.Println("error starting debug api")
+	}
 
 	// ================================================================
 	// SHUTDOWN
