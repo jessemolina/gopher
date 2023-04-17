@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"github.com/jessemolina/gopher/cmd/services/api/handlers"
@@ -14,8 +13,8 @@ import (
 var build = "dev"
 
 type config struct {
-	apiPort   int
-	debugPort int
+	apiPort   string
+	debugPort string
 }
 
 func main() {
@@ -43,15 +42,15 @@ func run() error {
 
 	// TODO make config dynamic for cli input
 	cfg := config{
-		apiPort:   4000,
-		debugPort: 3000,
+		apiPort:   os.Getenv("API_PORT"),
+		debugPort: os.Getenv("DEBUG_PORT"),
 	}
 
 	// ================================================================
 	// DEBUG API
 
 	debugMux := handlers.DebugMux()
-	debugAddr := ":" + strconv.Itoa(cfg.debugPort)
+	debugAddr := ":" + cfg.debugPort
 
 	// run debug on different goroutine
 	go func() {
@@ -66,7 +65,7 @@ func run() error {
 
 	// TODO listen and server service api
 	apiMux := handlers.APIMux()
-	apiAddr := ":" + strconv.Itoa(cfg.apiPort)
+	apiAddr := ":" + cfg.apiPort
 
 	// run service api on different goroutine
 	go func() {
