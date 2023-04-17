@@ -14,7 +14,8 @@ import (
 var build = "dev"
 
 type config struct {
-	port int
+	apiPort   int
+	debugPort int
 }
 
 func main() {
@@ -38,22 +39,42 @@ func run() error {
 	defer log.Println("service ended")
 
 	// ================================================================
-	// DEBUG API
+	// CONFIGUARTION
 
 	// TODO make config dynamic for cli input
 	cfg := config{
-		port: 4000,
+		apiPort:   4000,
+		debugPort: 3000,
 	}
 
 	// ================================================================
 	// DEBUG API
 
 	debugMux := handlers.DebugMux()
-	addr := ":" + strconv.Itoa(cfg.port)
+	debugAddr := ":" + strconv.Itoa(cfg.debugPort)
 
-	if err := http.ListenAndServe(addr, debugMux); err != nil {
-		log.Println("error starting debug api")
-	}
+	// run debug on different goroutine
+	go func() {
+		if err := http.ListenAndServe(debugAddr, debugMux); err != nil {
+			log.Println("error starting debug api", err)
+		}
+
+	}()
+
+	// ================================================================
+	// SERVICE API
+
+	// TODO listen and server service api
+	apiMux := handlers.APIMux()
+	apiAddr := ":" + strconv.Itoa(cfg.apiPort)
+
+	// run service api on different goroutine
+	go func() {
+		if err := http.ListenAndServe(apiAddr, apiMux); err != nil {
+			log.Println("error starting service api", err)
+		}
+
+	}()
 
 	// ================================================================
 	// SHUTDOWN
