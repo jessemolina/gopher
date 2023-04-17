@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gopher-deploy
+  namespace: gopher-ns
+  labels:
+    app: gopher-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gopher-app
+  template:
+    metadata:
+      labels:
+        app: gopher-app
+    spec:
+      containers:
+        - name: gopher-container
+          image: gopher:1.0
+          env:
+            - name: DEBUG_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gopher-cm
+                  key: DEBUG_PORT
+            - name: API_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gopher-cm
+                  key: API_PORT
+          ports:
+            - containerPort: 3000
+            - containerPort: 4000
