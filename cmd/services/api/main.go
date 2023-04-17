@@ -21,7 +21,6 @@ func main() {
 
 }
 
-// TODO build a run function to load handlers and start server mux
 func run() error {
 
 	// ================================================================
