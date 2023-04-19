@@ -18,6 +18,11 @@ spec:
       containers:
         - name: gopher-container
           image: gopher:1.0
+          ports:
+            - name: debug-port
+              containerPort: 3000
+            - name: api-port
+              containerPort: 4000
           env:
             - name: DEBUG_PORT
               valueFrom:
@@ -29,6 +34,3 @@ spec:
                 configMapKeyRef:
                   name: gopher-cm
                   key: API_PORT
-          ports:
-            - containerPort: 3000
-            - containerPort: 4000

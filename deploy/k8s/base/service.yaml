@@ -9,7 +9,10 @@ spec:
   ports:
     - name: debug-port
       port: 3000
-      targetPort: 3000
+      targetPort: debug-port
+      nodePort: 30300
     - name: api-port
       port: 4000
-      targetPort: 4000
+      targetPort: api-port
+      nodePort: 30400
+  type: NodePort
