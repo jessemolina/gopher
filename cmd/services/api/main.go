@@ -60,6 +60,8 @@ func run() error {
 
 	}()
 
+	log.Printf("starting debug service on port %v", cfg.debugPort)
+
 	// ================================================================
 	// SERVICE API
 
@@ -74,6 +76,9 @@ func run() error {
 		}
 
 	}()
+
+	log.Printf("starting api service on port %v", cfg.apiPort)
+
 
 	// ================================================================
 	// SHUTDOWN
