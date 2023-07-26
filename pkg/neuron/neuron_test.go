@@ -15,6 +15,7 @@ var tests = []struct{
 	expected float64
 }{
 	{[]float64{1, 2, 3}, []float64{0.2, 0.8, -0.5}, 2.0, 2.3000000000000003},
+	{[]float64{1.0, 2.0, 3.0, 2.5}, []float64{0.2,0.8,-0.5, 1.0}, 2.0, 4.800000000000001},
 }
 
 // TestNetInput tests the NetInput function.
