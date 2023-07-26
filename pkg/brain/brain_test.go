@@ -65,21 +65,3 @@ func TestWeightedSum(t *testing.T) {
 		}
 	}
 }
-
-/*
-  func TestNeuronNetInput(t *testing.T) {
-	for _, test := range neuronTest {
-		results, err := test.neuron.NetInput()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		fmt.Println(results)
-
-		if results != test.expected {
-			t.Errorf(message, test.expected, results)
-		}
-	}
-}
-
-*/
