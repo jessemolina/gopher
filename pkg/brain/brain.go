@@ -4,29 +4,41 @@ import (
 	"errors"
 )
 
-// NetInput calculates the linear combination of two vectors with bias.
-func NetInput(inputs []float64, weights [][]float64, bias []float64) ([]float64, error) {
+// Neuron is a single perceptron node.
+type Neuron struct {
+	weights []float64
+	bias    float64
+}
 
-	if len(weights) != len(bias) {
-		return nil, errors.New("Error: Size of weights array does not match size of bias.")
+// NetInput calculates the linear combination with bias of a nueron.
+func (n *Neuron) NetInput(inputs []float64) (float64, error) {
+	if len(inputs) != len(n.weights) {
+		return 0, errors.New("Error: Mismatch in size of neuron inputs and weights.")
 	}
 
-	outputs := []float64{}
-
-	for i := range weights {
-		if len(inputs) != len(weights[i]) {
-			return nil, errors.New("Error: Size of input vector does not match size of weights.")
-		}
-
-		output := bias[i]
-
-		for j := range inputs {
-			output += inputs[j] * weights[i][j]
-		}
-
-		outputs = append(outputs, output)
-
+	output := n.bias
+	for i := range inputs {
+		output += inputs[i] * n.weights[i]
 	}
 
-	return outputs, nil
+	return output, nil
+}
+
+// Layer is a collection of neurons.
+type Layer struct {
+	Neurons []Neuron
+}
+
+// WeightedSum calculates the linear cobination of inputs and neurons in a layer.
+func (l *Layer) WeightedSum(inputs []float64) ([]float64, error) {
+	output := []float64{}
+	for _, n := range l.Neurons {
+		results, err := n.NetInput(inputs)
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, results)
+	}
+
+	return output, nil
 }
