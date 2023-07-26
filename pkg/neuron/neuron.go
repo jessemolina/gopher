@@ -1,4 +1,4 @@
-package neural
+package neuron
 
 import (
 	"errors"
