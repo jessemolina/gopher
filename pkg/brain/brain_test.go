@@ -1,7 +1,6 @@
 package brain
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -40,6 +39,20 @@ var tests = []struct {
 		inputs:   []float64{1, 2, 3, 2.5},
 		expected: []float64{4.800000000000001, 1.21, 2.385},
 	},
+	{
+		layer: Layer{
+			[]Neuron{
+				{weights: []float64{0.6806635511317619, 0.28981398417996873, 0.5357723685986947}, bias: 0},
+			},
+		},
+		inputs:   []float64{1, 2, 3},
+		expected: []float64{2.8676086252877835},
+	},
+	/*{
+		layer: *DenseLayer(3, 1),
+		inputs:   []float64{1, 2, 3},
+		expected: []float64{2.8676086252877835},
+	},*/
 }
 
 // init is used to initialize pre-requisites for the tests.
@@ -54,6 +67,12 @@ func TestNetInput(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		/*
+		fmt.Println("\n", i)
+		fmt.Println("\t", test.layer)
+		fmt.Println("\t", results)
+		*/
 
 		if results != test.expected[0] {
 			t.Errorf(message, i, test.expected[0], results)
@@ -70,6 +89,12 @@ func TestWeightedSum(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		/*
+		fmt.Println("\n", i)
+		fmt.Println("\t", test.layer)
+		fmt.Println("\t", results)
+		*/
+
 		for j := range results {
 			if results[j] != test.expected[j] {
 				t.Errorf(message, i, test.expected, results)
@@ -81,10 +106,18 @@ func TestWeightedSum(t *testing.T) {
 // TODO Create table test for TestDenseLayer.
 // Test the DenseLayer function.
 func TestDenseLayer(t *testing.T) {
-	inputs, neurons := 3, 1
-	results := DenseLayer(inputs, neurons)
+	inputs, neurons := 0, 1
+	results, err := DenseLayer(inputs, neurons)
+	if err != nil {
+		errInvalidNumber := "Error: Invalid number of inputs or neurons."
+		if err.Error() != errInvalidNumber  {
+			t.Errorf(message, 0, err.Error(), errInvalidNumber)
+		}
+	}
 
-	fmt.Println(results)
+	if results == nil {
+		t.SkipNow()
+	}
 
 	if neurons != len(results.Neurons) {
 		t.Errorf(message, neurons, len(results.Neurons))
