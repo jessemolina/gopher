@@ -1,7 +1,6 @@
 package brain
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -83,8 +82,6 @@ func TestWeightedSum(t *testing.T) {
 func TestDenseLayer(t *testing.T) {
 	inputs, neurons := 3, 5
 	results := DenseLayer(inputs, neurons)
-
-	fmt.Println(results)
 
 	if neurons != len(results.Neurons) {
 		t.Errorf(message, neurons, len(results.Neurons))

@@ -2,7 +2,6 @@ package brain
 
 import (
 	"errors"
-	"math/rand"
 
 	"github.com/jessemolina/gopher/pkg/brain/math"
 )
@@ -50,7 +49,7 @@ func (l *Layer) WeightedSum(inputs []float64) ([]float64, error) {
 func DenseLayer(inputs, neurons int) *Layer {
 	ns := []Neuron{}
 	for i := 0; i < neurons ; i++{
-		n := Neuron{math.RandomSlice64(inputs), rand.Float64()}
+		n := Neuron{math.RandomSlice64(inputs), 0}
 		ns = append(ns, n)
 	}
 
