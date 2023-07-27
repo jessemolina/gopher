@@ -1,6 +1,7 @@
 package brain
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -10,7 +11,7 @@ const (
 )
 
 // message is a formatted error for failed tests.
-var message = "\nExpected:\t %v\nResults:\t %v\n"
+var message = "\nTest:\t\t %v\nExpected:\t %v\nResults:\t %v\n"
 
 // TODO Consider creating the layers dynamically and testing based on specific seed results.
 // tests is a collection of table tests with the expected result.
@@ -48,14 +49,14 @@ func init() {
 
 // Test the Neuron.NetInput method.
 func TestNetInput(t *testing.T) {
-	for _, test := range tests {
+	for i, test := range tests {
 		results, err := test.layer.Neurons[0].NetInput(test.inputs)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		if results != test.expected[0] {
-			t.Errorf(message, test.expected[0], results)
+			t.Errorf(message, i, test.expected[0], results)
 
 		}
 	}
@@ -63,15 +64,15 @@ func TestNetInput(t *testing.T) {
 
 // Test the Layer.WeightedSum method.
 func TestWeightedSum(t *testing.T) {
-	for _, test := range tests {
+	for i, test := range tests {
 		results, err := test.layer.WeightedSum(test.inputs)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		for i := range results {
-			if results[i] != test.expected[i] {
-				t.Errorf(message, test.expected, results)
+		for j := range results {
+			if results[j] != test.expected[j] {
+				t.Errorf(message, i, test.expected, results)
 			}
 		}
 	}
@@ -80,8 +81,10 @@ func TestWeightedSum(t *testing.T) {
 // TODO Create table test for TestDenseLayer.
 // Test the DenseLayer function.
 func TestDenseLayer(t *testing.T) {
-	inputs, neurons := 3, 5
+	inputs, neurons := 3, 1
 	results := DenseLayer(inputs, neurons)
+
+	fmt.Println(results)
 
 	if neurons != len(results.Neurons) {
 		t.Errorf(message, neurons, len(results.Neurons))
