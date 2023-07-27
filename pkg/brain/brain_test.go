@@ -1,12 +1,19 @@
 package brain
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+)
+
+const (
+	seed = 1000
 )
 
 // message is a formatted error for failed tests.
 var message = "\nExpected:\t %v\nResults:\t %v\n"
 
+// TODO Consider creating the layers dynamically and testing based on specific seed results.
 // tests is a collection of table tests with the expected result.
 var tests = []struct {
 	layer    Layer
@@ -35,7 +42,12 @@ var tests = []struct {
 	},
 }
 
-// Test the Nueron.NetInput method.
+// init is used to initialize pre-requisites for the tests.
+func init() {
+	rand.Seed(seed)
+}
+
+// Test the Neuron.NetInput method.
 func TestNetInput(t *testing.T) {
 	for _, test := range tests {
 		results, err := test.layer.Neurons[0].NetInput(test.inputs)
@@ -63,5 +75,22 @@ func TestWeightedSum(t *testing.T) {
 				t.Errorf(message, test.expected, results)
 			}
 		}
+	}
+}
+
+// TODO Create table test for TestDenseLayer.
+// Test the DenseLayer function.
+func TestDenseLayer(t *testing.T) {
+	inputs, neurons := 3, 5
+	results := DenseLayer(inputs, neurons)
+
+	fmt.Println(results)
+
+	if neurons != len(results.Neurons) {
+		t.Errorf(message, neurons, len(results.Neurons))
+	}
+
+	if inputs != len(results.Neurons[0].weights) {
+		t.Errorf(message, inputs, len(results.Neurons[0].weights))
 	}
 }

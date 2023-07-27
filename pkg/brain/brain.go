@@ -2,6 +2,9 @@ package brain
 
 import (
 	"errors"
+	"math/rand"
+
+	"github.com/jessemolina/gopher/pkg/brain/math"
 )
 
 // Neuron is a single perceptron node.
@@ -42,3 +45,15 @@ func (l *Layer) WeightedSum(inputs []float64) ([]float64, error) {
 
 	return output, nil
 }
+
+// DenseLayer creates a new dense layer with random neuron weights and biases.
+func DenseLayer(inputs, neurons int) *Layer {
+	ns := []Neuron{}
+	for i := 0; i < neurons ; i++{
+		n := Neuron{math.RandomSlice64(inputs), rand.Float64()}
+		ns = append(ns, n)
+	}
+
+	return &Layer{ns}
+}
+
