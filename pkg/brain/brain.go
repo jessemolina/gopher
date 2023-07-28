@@ -37,16 +37,20 @@ type Layer struct {
 }
 
 // WeightedSum calculates the linear cobination of inputs and neurons in a layer.
-func (l *Layer) WeightedSum(inputs []float64) ([]float64, error) {
-	output := []float64{}
-	for _, n := range l.Neurons {
-		results, err := n.NetInput(inputs)
-		if err != nil {
-			return nil, err
+func (l *Layer) WeightedSum(inputs [][]float64) ([][]float64, error) {
+	output := [][]float64{}
+	for _, input := range inputs {
+		results := []float64{}
+		for _, neuron := range l.Neurons {
+			netOutput, err := neuron.NetInput(input)
+			if err != nil {
+				return nil, err
+			}
+			results = append(results, netOutput)
 		}
+
 		output = append(output, results)
 	}
-
 	return output, nil
 }
 
@@ -57,11 +61,10 @@ func DenseLayer(inputs, neurons int) (*Layer, error) {
 	}
 
 	ns := []Neuron{}
-	for i := 0; i < neurons ; i++{
+	for i := 0; i < neurons; i++ {
 		n := Neuron{math.RandomSlice64(inputs), 0}
 		ns = append(ns, n)
 	}
 
 	return &Layer{ns}, nil
 }
-
