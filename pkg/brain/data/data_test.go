@@ -7,6 +7,7 @@ import (
 // message is a formatted error for failed tests.
 var message = "\nTest:\t\t %v\nExpected:\t %v\nResults:\t %v\n"
 
+// TODO Create table test for TestSpiralDataset
 // TestSpiralDataset validates that proper sample and class count are generated in the dataset.
 func TestSpiralDataset(t *testing.T) {
 	samples := 100
