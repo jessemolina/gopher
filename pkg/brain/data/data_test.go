@@ -17,15 +17,15 @@ func TestSpiralDataset(t *testing.T) {
 
 	unique := make(map[float64]bool)
 
-	for _, sample := range data {
-		unique[sample.Target] = true
+	for _, sample := range data.Y {
+		unique[sample] = true
 	}
 
 	if cardinality != len(unique) {
 		t.Errorf(message, 0, cardinality, len(unique))
 	}
 
-	if samples != len(data) {
-		t.Errorf(message, 0, samples, len(data))
+	if samples != len(data.X) {
+		t.Errorf(message, 0, samples, len(data.X))
 	}
 }
