@@ -12,7 +12,7 @@ type Sample struct {
 }
 
 // SpiralDataset creates a dataset of X, Y spiral coordinates with a categorical label.
-// (x, y) = (cos t, sin t), where t is the
+// (x, y) = (cos t, sin t), where t is the angle in radians.
 func SpiralDataset(samples, cardinality int) []Sample {
 	count := samples / cardinality
 	remaining := int(samples % cardinality)
