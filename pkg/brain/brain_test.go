@@ -3,6 +3,8 @@ package brain
 import (
 	"math/rand"
 	"testing"
+
+	"github.com/jessemolina/gopher/pkg/brain/data"
 )
 
 const (
@@ -16,7 +18,7 @@ var message = "\nTest:\t\t %v\nExpected:\t %v\nResults:\t %v\n"
 // tests is a collection of table tests with the expected result.
 var tests = []struct {
 	layer    Layer
-	inputs   []float64
+	inputs   [][]float64
 	expected []float64
 }{
 	{
@@ -25,7 +27,7 @@ var tests = []struct {
 				{weights: []float64{0.2, 0.8, -0.5}, bias: 2.0},
 			},
 		},
-		inputs:   []float64{1, 2, 3},
+		inputs:   [][]float64{{1, 2, 3}},
 		expected: []float64{2.3000000000000003},
 	},
 	{
@@ -36,7 +38,7 @@ var tests = []struct {
 				{weights: []float64{-0.26, -0.27, 0.17, 0.87}, bias: 0.5},
 			},
 		},
-		inputs:   []float64{1, 2, 3, 2.5},
+		inputs:   [][]float64{{1, 2, 3, 2.5}},
 		expected: []float64{4.800000000000001, 1.21, 2.385},
 	},
 	{
@@ -45,7 +47,7 @@ var tests = []struct {
 				{weights: []float64{0.6806635511317619, 0.28981398417996873, 0.5357723685986947}, bias: 0},
 			},
 		},
-		inputs:   []float64{1, 2, 3},
+		inputs:   [][]float64{{1, 2, 3}},
 		expected: []float64{2.8676086252877835},
 	},
 	/*{
@@ -63,7 +65,7 @@ func init() {
 // Test the Neuron.NetInput method.
 func TestNetInput(t *testing.T) {
 	for i, test := range tests {
-		results, err := test.layer.Neurons[0].NetInput(test.inputs)
+		results, err := test.layer.Neurons[0].NetInput(test.inputs[0])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,14 +91,8 @@ func TestWeightedSum(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		/*
-		fmt.Println("\n", i)
-		fmt.Println("\t", test.layer)
-		fmt.Println("\t", results)
-		*/
-
 		for j := range results {
-			if results[j] != test.expected[j] {
+			if results[j][0] != test.expected[j] {
 				t.Errorf(message, i, test.expected, results)
 			}
 		}
@@ -120,10 +116,31 @@ func TestDenseLayer(t *testing.T) {
 	}
 
 	if neurons != len(results.Neurons) {
-		t.Errorf(message, neurons, len(results.Neurons))
+		t.Errorf(message, 0, neurons, len(results.Neurons))
 	}
 
 	if inputs != len(results.Neurons[0].weights) {
-		t.Errorf(message, inputs, len(results.Neurons[0].weights))
+		t.Errorf(message, 0, inputs, len(results.Neurons[0].weights))
+	}
+}
+
+// TestDenseLayerForward tests the weighted sum for a generated data set.
+func TestDenseLayerForward(t *testing.T) {
+	samples := 100
+	cardinality := 3
+
+	dataset := data.SpiralDataset(samples, cardinality)
+	layer, err := DenseLayer(2, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	results, err := layer.WeightedSum(dataset.X)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if samples == len(results) {
+		t.Errorf(message, 0, samples, len(results))
 	}
 }
