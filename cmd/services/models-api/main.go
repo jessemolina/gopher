@@ -10,6 +10,8 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+var build = "develop"
+
 func main() {
 	logger := log.NewLogger("models-api")
 
@@ -24,7 +26,11 @@ func main() {
 // run starts the api service.
 func run(log *slog.Logger) error {
 
+	// Start the service.
+
 	log.Info("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+
+	// Shutdown the service.
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
