@@ -17,8 +17,8 @@ type Neuron struct {
 	bias    float64
 }
 
-// NetInput calculates the linear combination with bias of a nueron.
-func (n *Neuron) NetInput(inputs []float64) (float64, error) {
+// WeightedSum calculates the linear combination of inputs and neuron weights with bias.
+func (n *Neuron) WeightedSum(inputs []float64) (float64, error) {
 	if len(inputs) != len(n.weights) {
 		return 0, errors.New("Error: Mismatch in size of neuron inputs and weights.")
 	}
@@ -36,13 +36,13 @@ type Layer struct {
 	Neurons []Neuron
 }
 
-// WeightedSum calculates the linear cobination of inputs and neurons in a layer.
-func (l *Layer) WeightedSum(inputs [][]float64) ([][]float64, error) {
+// ForwardPass calculates the WeightedSum of all neurons in a layer.
+func (l *Layer) ForwardPass(inputs [][]float64) ([][]float64, error) {
 	output := [][]float64{}
 	for _, input := range inputs {
 		results := []float64{}
 		for _, neuron := range l.Neurons {
-			netOutput, err := neuron.NetInput(input)
+			netOutput, err := neuron.WeightedSum(input)
 			if err != nil {
 				return nil, err
 			}

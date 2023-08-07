@@ -62,10 +62,10 @@ func init() {
 	rand.Seed(seed)
 }
 
-// Test the Neuron.NetInput method.
-func TestNetInput(t *testing.T) {
+// Test the Neuron.WeightedSum method.
+func TestWeightedSum(t *testing.T) {
 	for i, test := range tests {
-		results, err := test.layer.Neurons[0].NetInput(test.inputs[0])
+		results, err := test.layer.Neurons[0].WeightedSum(test.inputs[0])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -83,10 +83,10 @@ func TestNetInput(t *testing.T) {
 	}
 }
 
-// Test the Layer.WeightedSum method.
-func TestWeightedSum(t *testing.T) {
+// Test the Layer.ForwardPass method.
+func TestForwardPass(t *testing.T) {
 	for i, test := range tests {
-		results, err := test.layer.WeightedSum(test.inputs)
+		results, err := test.layer.ForwardPass(test.inputs)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -135,7 +135,7 @@ func TestDenseLayerForward(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	results, err := layer.WeightedSum(dataset.X)
+	results, err := layer.ForwardPass(dataset.X)
 	if err != nil {
 		t.Fatal(err)
 	}
