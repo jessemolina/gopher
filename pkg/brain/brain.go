@@ -17,8 +17,8 @@ type Neuron struct {
 	bias    float64
 }
 
-// NetInput calculates the linear combination with bias of a nueron.
-func (n *Neuron) NetInput(inputs []float64) (float64, error) {
+// WeightedSum calculates the linear combination of inputs and neuron weights with bias.
+func (n *Neuron) WeightedSum(inputs []float64) (float64, error) {
 	if len(inputs) != len(n.weights) {
 		return 0, errors.New("Error: Mismatch in size of neuron inputs and weights.")
 	}
@@ -33,20 +33,21 @@ func (n *Neuron) NetInput(inputs []float64) (float64, error) {
 
 // Layer is a collection of neurons.
 type Layer struct {
-	Neurons []Neuron
+	Neurons    []Neuron
+	Activation func(float64) float64
 }
 
-// WeightedSum calculates the linear cobination of inputs and neurons in a layer.
-func (l *Layer) WeightedSum(inputs [][]float64) ([][]float64, error) {
+// ForwardPass calculates the WeightedSum of all neurons in a layer.
+func (l *Layer) ForwardPass(inputs [][]float64) ([][]float64, error) {
 	output := [][]float64{}
 	for _, input := range inputs {
 		results := []float64{}
 		for _, neuron := range l.Neurons {
-			netOutput, err := neuron.NetInput(input)
+			netOutput, err := neuron.WeightedSum(input)
 			if err != nil {
 				return nil, err
 			}
-			results = append(results, netOutput)
+			results = append(results, l.Activation(netOutput))
 		}
 
 		output = append(output, results)
@@ -54,17 +55,19 @@ func (l *Layer) WeightedSum(inputs [][]float64) ([][]float64, error) {
 	return output, nil
 }
 
-// DenseLayer creates a new dense layer with random neuron weights and biases.
-func DenseLayer(inputs, neurons int) (*Layer, error) {
+// RandomNeurons creates a slice of neurons with random weights and zero bias.
+func RandomNeurons(inputs, neurons int) ([]Neuron, error) {
 	if inputs == 0 || neurons == 0 {
 		return nil, errors.New("Error: Invalid number of inputs or neurons.")
 	}
 
-	ns := []Neuron{}
+	rn := []Neuron{}
 	for i := 0; i < neurons; i++ {
 		n := Neuron{math.RandomSlice64(inputs), 0}
-		ns = append(ns, n)
+		rn = append(rn, n)
 	}
 
-	return &Layer{ns}, nil
+	return rn, nil
 }
+
+
