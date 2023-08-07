@@ -140,7 +140,7 @@ func TestDenseLayerForward(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if samples == len(results) {
+	if samples != len(results) {
 		t.Errorf(message, 0, samples, len(results))
 	}
 }
