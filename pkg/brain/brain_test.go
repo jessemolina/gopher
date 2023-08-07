@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/jessemolina/gopher/pkg/brain/activate"
 	"github.com/jessemolina/gopher/pkg/brain/data"
 )
 
@@ -26,6 +27,7 @@ var tests = []struct {
 			[]Neuron{
 				{weights: []float64{0.2, 0.8, -0.5}, bias: 2.0},
 			},
+			activate.Linear,
 		},
 		inputs:   [][]float64{{1, 2, 3}},
 		expected: []float64{2.3000000000000003},
@@ -37,6 +39,7 @@ var tests = []struct {
 				{weights: []float64{0.5, -0.91, 0.26, -0.5}, bias: 3.0},
 				{weights: []float64{-0.26, -0.27, 0.17, 0.87}, bias: 0.5},
 			},
+			activate.Linear,
 		},
 		inputs:   [][]float64{{1, 2, 3, 2.5}},
 		expected: []float64{4.800000000000001, 1.21, 2.385},
@@ -46,6 +49,7 @@ var tests = []struct {
 			[]Neuron{
 				{weights: []float64{0.6806635511317619, 0.28981398417996873, 0.5357723685986947}, bias: 0},
 			},
+			activate.Linear,
 		},
 		inputs:   [][]float64{{1, 2, 3}},
 		expected: []float64{2.8676086252877835},
@@ -70,12 +74,6 @@ func TestWeightedSum(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		/*
-		fmt.Println("\n", i)
-		fmt.Println("\t", test.layer)
-		fmt.Println("\t", results)
-		*/
-
 		if results != test.expected[0] {
 			t.Errorf(message, i, test.expected[0], results)
 
@@ -99,11 +97,11 @@ func TestForwardPass(t *testing.T) {
 	}
 }
 
-// TODO Create table test for TestDenseLayer.
-// Test the DenseLayer function.
-func TestDenseLayer(t *testing.T) {
+// TODO Create table test for RandomNeurons.
+// Test the RandomNeurons function.
+func TestRandomNeurons(t *testing.T) {
 	inputs, neurons := 0, 1
-	results, err := DenseLayer(inputs, neurons)
+	results, err := RandomNeurons(inputs, neurons)
 	if err != nil {
 		errInvalidNumber := "Error: Invalid number of inputs or neurons."
 		if err.Error() != errInvalidNumber  {
@@ -115,25 +113,24 @@ func TestDenseLayer(t *testing.T) {
 		t.SkipNow()
 	}
 
-	if neurons != len(results.Neurons) {
-		t.Errorf(message, 0, neurons, len(results.Neurons))
+	if neurons != len(results) {
+		t.Errorf(message, 0, neurons, len(results))
 	}
 
-	if inputs != len(results.Neurons[0].weights) {
-		t.Errorf(message, 0, inputs, len(results.Neurons[0].weights))
-	}
 }
 
 // TestDenseLayerForward tests the weighted sum for a generated data set.
-func TestDenseLayerForward(t *testing.T) {
+func TestLayerForwardPass(t *testing.T) {
 	samples := 100
 	cardinality := 3
 
 	dataset := data.SpiralDataset(samples, cardinality)
-	layer, err := DenseLayer(2, 3)
+	neurons , err := RandomNeurons(2, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	layer := &Layer{neurons, activate.ReLU}
 
 	results, err := layer.ForwardPass(dataset.X)
 	if err != nil {
@@ -143,4 +140,9 @@ func TestDenseLayerForward(t *testing.T) {
 	if samples != len(results) {
 		t.Errorf(message, 0, samples, len(results))
 	}
+
+	if cardinality != len(results[0]) {
+		t.Errorf(message, 0, samples, len(results[0]))
+	}
+
 }

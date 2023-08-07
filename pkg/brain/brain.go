@@ -33,7 +33,8 @@ func (n *Neuron) WeightedSum(inputs []float64) (float64, error) {
 
 // Layer is a collection of neurons.
 type Layer struct {
-	Neurons []Neuron
+	Neurons    []Neuron
+	Activation func(float64) float64
 }
 
 // ForwardPass calculates the WeightedSum of all neurons in a layer.
@@ -46,7 +47,7 @@ func (l *Layer) ForwardPass(inputs [][]float64) ([][]float64, error) {
 			if err != nil {
 				return nil, err
 			}
-			results = append(results, netOutput)
+			results = append(results, l.Activation(netOutput))
 		}
 
 		output = append(output, results)
@@ -54,17 +55,19 @@ func (l *Layer) ForwardPass(inputs [][]float64) ([][]float64, error) {
 	return output, nil
 }
 
-// DenseLayer creates a new dense layer with random neuron weights and biases.
-func DenseLayer(inputs, neurons int) (*Layer, error) {
+// RandomNeurons creates a slice of neurons with random weights and zero bias.
+func RandomNeurons(inputs, neurons int) ([]Neuron, error) {
 	if inputs == 0 || neurons == 0 {
 		return nil, errors.New("Error: Invalid number of inputs or neurons.")
 	}
 
-	ns := []Neuron{}
+	rn := []Neuron{}
 	for i := 0; i < neurons; i++ {
 		n := Neuron{math.RandomSlice64(inputs), 0}
-		ns = append(ns, n)
+		rn = append(rn, n)
 	}
 
-	return &Layer{ns}, nil
+	return rn, nil
 }
+
+
