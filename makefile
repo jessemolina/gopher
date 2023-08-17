@@ -27,6 +27,9 @@ dkr-build:
 	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 	.
 
+dkr-logs:
+	docker logs $(SERVICE_NAME)
+
 dkr-run:
 	docker run -d --name $(SERVICE_NAME) $(SERVICE_IMAGE)
 
