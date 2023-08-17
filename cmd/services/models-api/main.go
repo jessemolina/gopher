@@ -1,13 +1,13 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 
 	"github.com/jessemolina/gopher/pkg/log"
-	"golang.org/x/exp/slog"
 )
 
 var build = "develop"
