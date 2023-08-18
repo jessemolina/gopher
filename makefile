@@ -9,7 +9,7 @@ APP             := models
 REPO_NAME 		:= jessemolina
 SERVICE_NAME    := models-api
 VERSION         := 0.0.1
-SERVICE_IMAGE   := $(REPO_NAME)/$(SERVICE_NAME):$(VERSION)
+SERVICE_IMAGE   := $(REPO_NAME)/$(APP):$(VERSION)
 
 # Developer
 dev-up: k8s-up \
@@ -53,12 +53,14 @@ go-run:
 
 # Helm
 helm-install:
-	helm install $(SERVICE_NAME) deploy/helm/models-api \
+	helm install $(SERVICE_NAME) deploy/helm/models \
 	-f deploy/k8s/dev/models/values.yaml \
+	--create-namespace \
 	--namespace $(NAMESPACE)
 
 helm-upgrade:
-	helm upgrade $(SERVICE_NAME) deploy/helm/models-api
+	helm upgrade $(SERVICE_NAME) deploy/helm/models \
+	--namespace $(NAMESPACE)
 
 # Kubernetes
 k8s-up:
