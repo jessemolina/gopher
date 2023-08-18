@@ -1,0 +1,7 @@
+.dockerignore
+.gitignore
+makefile
+README.org
+
+deploy/
+examples/

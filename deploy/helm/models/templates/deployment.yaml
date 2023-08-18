@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+# Deployment manages and scales a set of pods.
+kind: Deployment
+metadata:
+  name: {{ .Values.service.app }}
+
+# Spec defines the desired state and configuration of the resource.
+spec:
+
+  # Selector defines the pods manged by the resource.
+  selector:
+    matchLabels:
+      app: {{ .Values.service.app }}
+
+  # Template defines the pod configuration.
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.app }}
+    spec:
+      containers:
+      - name: {{ .Values.service.name }}
+        image: {{ .Values.service.image }}
+        ports:
+        - name: models-api
+          containerPort: {{ .Values.service.ports.api }}
+        - name: models-debug
+          containerPort: {{ .Values.service.ports.debug }}
+        env:
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu

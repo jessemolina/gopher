@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: models-api
+
+# Spec defines the desired state and configuration of the resource
+spec:
+
+  # Selector defines the pods managed by the resource.
+  selector:
+      app: {{ .Values.service.app }}
+
+  ports:
+    - name: api
+      protocol: TCP
+      port: {{ .Values.service.ports.api }}
+      targetPort: {{ .Values.service.ports.api }}
+    - name: debug
+      protocol: TCP
+      port: {{ .Values.service.ports.debug }}
+      targetPort: {{ .Values.service.ports.debug }}

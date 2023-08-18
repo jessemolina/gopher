@@ -1,0 +1,7 @@
+service:
+  app: models
+  image: jessemolina/models:0.0.1
+  name: models-api
+  ports:
+    api: 3000
+    debug: 4000

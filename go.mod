@@ -1,10 +1,11 @@
 module github.com/jessemolina/gopher
 
-go 1.19
+go 1.21
 
 require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 )
 
 require (
