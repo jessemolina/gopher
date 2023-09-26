@@ -5,21 +5,26 @@ KIND            := kindest/node:v1.27.1
 
 KIND_CLUSTER    := gopher-cluster
 NAMESPACE       := models-system
-APP             := models
 REPO_NAME 		:= jessemolina
-SERVICE_NAME    := models-api
+APP             := models
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(REPO_NAME)/$(APP):$(VERSION)
+RELEASE_NAME    := models-api
 
+# ================================================================
 # Developer
-dev-up: k8s-up \
-		dkr-build \
-		k8s-load
 
-dev-down: k8s-down
+dev-up: kind-up \
+		docker-build \
+		kind-load \
+		helm-install
 
+dev-down: kind-down
+
+# ================================================================
 # Docker
-dkr-build:
+
+docker-build:
 	docker build \
 	-f deploy/docker/dockerfile.models \
 	-t $(SERVICE_IMAGE) \
@@ -27,43 +32,49 @@ dkr-build:
 	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 	.
 
-dkr-logs:
-	docker logs $(SERVICE_NAME)
+docker-logs:
+	docker logs $(RELEASE_NAME)
 
-dkr-run:
-	docker run -d --name $(SERVICE_NAME) $(SERVICE_IMAGE)
+docker-run:
+	docker run -d --name $(RELEASE_NAME) $(SERVICE_IMAGE)
 
-dkr-status:
+docker-status:
 	docker ps -a
 
-dkr-sh:
-	docker exec -it $(SERVICE_NAME) /bin/sh
+docker-sh:
+	docker exec -it $(RELEASE_NAME) /bin/sh
 
-dkr-prune:
-	docker stop $(SERVICE_NAME)
-	docker rm $(SERVICE_NAME)
+docker-prune:
+	docker stop $(RELEASE_NAME)
+	docker rm $(RELEASE_NAME)
 	docker image rm $(SERVICE_IMAGE)
 
+# ================================================================
 # Go
+
 go-tidy:
 	go mod tidy
 
 go-run:
 	go run cmd/services/models-api/main.go
 
+# ================================================================
 # Helm
+
 helm-install:
-	helm install $(SERVICE_NAME) deploy/helm/models \
+	helm install $(RELEASE_NAME) deploy/helm/models \
 	-f deploy/k8s/dev/models/values.yaml \
 	--create-namespace \
 	--namespace $(NAMESPACE)
 
 helm-upgrade:
-	helm upgrade $(SERVICE_NAME) deploy/helm/models \
+	helm upgrade $(RELEASE_NAME) deploy/helm/models \
 	--namespace $(NAMESPACE)
 
-# Kubernetes
-k8s-up:
+# ================================================================
+# Kind
+
+kind-up:
 	kind create cluster \
 		--image $(KIND) \
 		--name $(KIND_CLUSTER) \
@@ -71,13 +82,22 @@ k8s-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
-k8s-down:
+kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
-k8s-load:
+kind-load:
 	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
+
+# ================================================================
+# Kubernetes
 
 k8s-status:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
+
+# ================================================================
+# Test
+
+test-local:
+	curl -il localhost:3000/test
