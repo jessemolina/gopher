@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -24,8 +25,29 @@ func Parse(cfg interface{}) {
 	fieldsInfo := makeInfo(cfg)
 
 	for _, fi := range fieldsInfo {
-		setEnv(fi)
-		setFlags(fi)
+		msg := "%v\n--%v/$%v"
+		usage := fmt.Sprintf(msg, fi.desc, fi.name, fi.env)
+		envValue := os.Getenv(fi.env)
+
+		switch fi.kind {
+		case reflect.String:
+			flag.StringVar(
+				fi.value.Addr().Interface().(*string),
+				fi.name,
+				envValue,
+				usage)
+		case reflect.Int:
+			intValue, err := strconv.Atoi(envValue)
+			if err != nil {
+				intValue = 0
+			}
+
+			flag.IntVar(
+				fi.value.Addr().Interface().(*int),
+				fi.name,
+				intValue,
+				usage)
+		}
 	}
 
 	flag.Parse()
