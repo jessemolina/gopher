@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+/*
+  TODO Fix error when struct fields start with lowercase.
+  TODO Pass configuration value to logger.
+ */
+
 // fieldInfo represents information about a field in a struct.
 type fieldInfo struct {
 	name  string
@@ -17,6 +22,7 @@ type fieldInfo struct {
 	env   string
 	kind  reflect.Kind
 	value reflect.Value
+	tags  map[string]string
 }
 
 // Parse unmarshalls the given cfg from os env vars, flag values, and config field tags.
@@ -24,20 +30,28 @@ func Parse(cfg interface{}) {
 
 	fieldsInfo := makeInfo(cfg)
 
+	message := "%v\n--%v/$%v"
+
 	for _, fi := range fieldsInfo {
-		msg := "%v\n--%v/$%v"
-		usage := fmt.Sprintf(msg, fi.desc, fi.name, fi.env)
-		envValue := os.Getenv(fi.env)
+		usage := fmt.Sprintf(message, fi.desc, fi.name, fi.env)
+
+		defaultString, _ := fi.tags["default"]
+		envString := os.Getenv(fi.env)
+
+		if envString != "" {
+			defaultString = envString
+
+		}
 
 		switch fi.kind {
 		case reflect.String:
 			flag.StringVar(
 				fi.value.Addr().Interface().(*string),
 				fi.name,
-				envValue,
+				defaultString,
 				usage)
 		case reflect.Int:
-			intValue, err := strconv.Atoi(envValue)
+			intValue, err := strconv.Atoi(defaultString)
 			if err != nil {
 				intValue = 0
 			}
@@ -66,6 +80,20 @@ func makeInfo(cfg interface{}) []fieldInfo {
 		env := screamingSnakeCase(desc, " ")
 		kind := t.Field(i).Type.Kind()
 		value := v.Field(i)
+		tags := make(map[string]string)
+
+		configTag := t.Field(i).Tag.Get("config")
+		configList := strings.Split(configTag, ",")
+
+		for _, config := range configList {
+			values := strings.Split(config, ":")
+			if len(values) == 2 {
+				tags[values[0]] = values[1]
+			} else {
+				tags[values[0]] = "true"
+			}
+
+		}
 
 		info := fieldInfo{
 			name:  name,
@@ -73,6 +101,7 @@ func makeInfo(cfg interface{}) []fieldInfo {
 			env:   env,
 			kind:  kind,
 			value: value,
+			tags:  tags,
 		}
 
 		fieldsInfo = append(fieldsInfo, info)
@@ -81,34 +110,6 @@ func makeInfo(cfg interface{}) []fieldInfo {
 	return fieldsInfo
 }
 
-// setEnv checks for a field's environment variable and sets if it exists.
-func setEnv(fi fieldInfo) {
-	osEnv := os.Getenv(fi.env)
-
-	// TODO Determine how to convernt osEnv strings to non-string values (i.e. int)
-	if osEnv != "" {
-		fi.value.SetString(osEnv)
-	}
-
-}
-
-// setFlag defines a cli flag for each fieldInfo.
-func setFlags(fi fieldInfo) {
-
-	msg := "%v\n--%v/$%v"
-	usage := fmt.Sprintf(msg, fi.desc, fi.name, fi.env)
-
-	switch fi.kind {
-	case reflect.String:
-		flag.String(fi.name, "", usage)
-	case reflect.Int:
-		flag.Int(fi.name, 0, usage)
-	}
-}
-
-func parseDefault(tag reflect.StructTag) string {
-	return ""
-}
 
 // splitName splits a camel case string into a delimeted-split string.
 func splitCamelCase(name string, delim string) string {
