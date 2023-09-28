@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/jessemolina/gopher/pkg/log"
+	"github.com/jessemolina/gopher/pkg/config"
 )
 
 var build = "develop"
@@ -25,6 +26,17 @@ func main() {
 
 // run starts the api service.
 func run(log *slog.Logger) error {
+
+	// Configuration
+
+	cfg := struct {
+		APIPort   string `config:"default:3000"`
+		DebugPort string `config:"default:4000"`
+	}{}
+
+	config.Parse(&cfg)
+
+	log.Info("config", "API Port", cfg.APIPort, "Debug Port", cfg.DebugPort)
 
 	// Start the service.
 
