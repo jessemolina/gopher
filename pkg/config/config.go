@@ -11,8 +11,8 @@ import (
 )
 
 /*
-  TODO Fix error when struct fields start with lowercase.
-  TODO Pass configuration value to logger.
+  TODO Determine how to pass fi string up the call stack for the logger.
+  TODO Brainstorm on how other fi.tags, such as mask, can be used
  */
 
 // fieldInfo represents information about a field in a struct.
@@ -34,13 +34,11 @@ func Parse(cfg interface{}) {
 
 	for _, fi := range fieldsInfo {
 		usage := fmt.Sprintf(message, fi.desc, fi.name, fi.env)
-
 		defaultString, _ := fi.tags["default"]
-		envString := os.Getenv(fi.env)
 
+		envString := os.Getenv(fi.env)
 		if envString != "" {
 			defaultString = envString
-
 		}
 
 		switch fi.kind {
@@ -75,6 +73,9 @@ func makeInfo(cfg interface{}) []fieldInfo {
 	v := reflect.ValueOf(cfg).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).PkgPath != "" {
+			break
+		}
 		name := strings.ToLower(t.Field(i).Name)
 		desc := splitCamelCase(t.Field(i).Name, " ")
 		env := screamingSnakeCase(desc, " ")
