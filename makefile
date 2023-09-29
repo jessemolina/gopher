@@ -19,6 +19,15 @@ dev-up: kind-up \
 		kind-load \
 		helm-install
 
+dev-update: docker-build \
+			helm-uninstall \
+			kind-load \
+			helm-install
+
+dev-upgrade: docker-build \
+			 kind-load \
+			 helm-upgrade
+
 dev-down: kind-down
 
 # ================================================================
@@ -67,8 +76,17 @@ helm-install:
 	--create-namespace \
 	--namespace $(NAMESPACE)
 
+helm-status:
+	helm list -n $(NAMESPACE)
+	@echo "\n"
+	helm history -n $(NAMESPACE) $(RELEASE_NAME)
+
+helm-uninstall:
+	helm uninstall $(RELEASE_NAME) --namespace $(NAMESPACE)
+
 helm-upgrade:
 	helm upgrade $(RELEASE_NAME) deploy/helm/models \
+	-f deploy/k8s/dev/models/values.yaml \
 	--namespace $(NAMESPACE)
 
 # ================================================================
@@ -90,6 +108,9 @@ kind-load:
 
 # ================================================================
 # Kubernetes
+
+k8s-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100
 
 k8s-status:
 	kubectl get nodes -o wide
