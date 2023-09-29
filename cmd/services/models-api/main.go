@@ -2,13 +2,15 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 
-	"github.com/jessemolina/gopher/pkg/log"
 	"github.com/jessemolina/gopher/pkg/config"
+	"github.com/jessemolina/gopher/pkg/log"
+	"github.com/jessemolina/gopher/internal/web/v1/debug"
 )
 
 var build = "develop"
@@ -27,7 +29,10 @@ func main() {
 // run starts the api service.
 func run(log *slog.Logger) error {
 
+	// ================================================================
 	// Configuration
+
+	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	cfg := struct {
 		APIPort   string `config:"default:3000"`
@@ -36,12 +41,26 @@ func run(log *slog.Logger) error {
 
 	config.Parse(&cfg)
 
-	log.Info("config", "API Port", cfg.APIPort, "Debug Port", cfg.DebugPort)
+	// ================================================================
+	// Start the debug service.
 
-	// Start the service.
 
-	log.Info("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+	log.Info("starting debug server", "port", cfg.DebugPort)
 
+	// TODO Serve the debug service with its own goroutine.
+
+	go func() {
+		if err := http.ListenAndServe(":" + cfg.DebugPort, debug.DefaultMux()); err != nil {
+			log.Error("shutting down debug server", "status", "ERROR")
+		}
+	}()
+
+	// ================================================================
+	// Start the api service.
+
+	log.Info("starting api server", "port", cfg.APIPort)
+
+	// ================================================================
 	// Shutdown the service.
 
 	shutdown := make(chan os.Signal, 1)

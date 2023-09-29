@@ -2,9 +2,11 @@
 GOLANG          := golang:1.20
 ALPINE          := alpine:3.18
 KIND            := kindest/node:v1.27.1
+TELEPRESENCE    := datawire/tel2:2.13.1
 
 KIND_CLUSTER    := gopher-cluster
 NAMESPACE       := models-system
+SERVICE_NAME	:= models-api
 REPO_NAME 		:= jessemolina
 APP             := models
 VERSION         := 0.0.1
@@ -17,9 +19,20 @@ RELEASE_NAME    := models-api
 dev-up: kind-up \
 		docker-build \
 		kind-load \
+		telepresence-up \
 		helm-install
 
-dev-down: kind-down
+dev-update: docker-build \
+			helm-uninstall \
+			kind-load \
+			helm-install
+
+dev-upgrade: docker-build \
+			 kind-load \
+			 helm-upgrade
+
+dev-down: kind-down \
+		  telepresence-down
 
 # ================================================================
 # Docker
@@ -67,8 +80,17 @@ helm-install:
 	--create-namespace \
 	--namespace $(NAMESPACE)
 
+helm-status:
+	helm list -n $(NAMESPACE)
+	@echo "\n"
+	helm history -n $(NAMESPACE) $(RELEASE_NAME)
+
+helm-uninstall:
+	helm uninstall $(RELEASE_NAME) --namespace $(NAMESPACE)
+
 helm-upgrade:
 	helm upgrade $(RELEASE_NAME) deploy/helm/models \
+	-f deploy/k8s/dev/models/values.yaml \
 	--namespace $(NAMESPACE)
 
 # ================================================================
@@ -82,6 +104,9 @@ kind-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
+	kind load docker-image $(TELEPRESENCE) --name $(KIND_CLUSTER)
+
+
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
@@ -91,13 +116,29 @@ kind-load:
 # ================================================================
 # Kubernetes
 
+k8s-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100
+
 k8s-status:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
 # ================================================================
+# Telepresence
+
+telepresence-up:
+	telepresence --context=kind-$(KIND_CLUSTER) helm install
+	telepresence --context=kind-$(KIND_CLUSTER) connect
+
+telepresence-down:
+	telepresence quit -s
+
+# ================================================================
 # Test
 
 test-local:
 	curl -il localhost:3000/test
+
+test-endpoint:
+	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000/debug/pprof/
