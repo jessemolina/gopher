@@ -2,9 +2,11 @@
 GOLANG          := golang:1.20
 ALPINE          := alpine:3.18
 KIND            := kindest/node:v1.27.1
+TELEPRESENCE    := datawire/tel2:2.13.1
 
 KIND_CLUSTER    := gopher-cluster
 NAMESPACE       := models-system
+SERVICE_NAME	:= models-api
 REPO_NAME 		:= jessemolina
 APP             := models
 VERSION         := 0.0.1
@@ -17,6 +19,7 @@ RELEASE_NAME    := models-api
 dev-up: kind-up \
 		docker-build \
 		kind-load \
+		telepresence-up \
 		helm-install
 
 dev-update: docker-build \
@@ -28,7 +31,8 @@ dev-upgrade: docker-build \
 			 kind-load \
 			 helm-upgrade
 
-dev-down: kind-down
+dev-down: kind-down \
+		  telepresence-down
 
 # ================================================================
 # Docker
@@ -100,6 +104,9 @@ kind-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
+	kind load docker-image $(TELEPRESENCE) --name $(KIND_CLUSTER)
+
+
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
@@ -118,7 +125,20 @@ k8s-status:
 	kubectl get pods -o wide --watch --all-namespaces
 
 # ================================================================
+# Telepresence
+
+telepresence-up:
+	telepresence --context=kind-$(KIND_CLUSTER) helm install
+	telepresence --context=kind-$(KIND_CLUSTER) connect
+
+telepresence-down:
+	telepresence quit -s
+
+# ================================================================
 # Test
 
 test-local:
 	curl -il localhost:3000/test
+
+test-endpoint:
+	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000/debug/pprof/
