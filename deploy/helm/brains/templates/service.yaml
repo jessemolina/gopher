@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: models-api
+  name: brains-api
 
 # Spec defines the desired state and configuration of the resource
 spec:

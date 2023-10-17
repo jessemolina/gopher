@@ -5,13 +5,13 @@ KIND            := kindest/node:v1.27.1
 TELEPRESENCE    := datawire/tel2:2.13.1
 
 KIND_CLUSTER    := gopher-cluster
-NAMESPACE       := models-system
-SERVICE_NAME	:= models-api
+NAMESPACE       := brains-system
+SERVICE_NAME	:= brains-api
 REPO_NAME 		:= jessemolina
-APP             := models
+APP             := brains
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(REPO_NAME)/$(APP):$(VERSION)
-RELEASE_NAME    := models-api
+RELEASE_NAME    := brains-api
 
 # ================================================================
 # Developer
@@ -39,7 +39,7 @@ dev-down: kind-down \
 
 docker-build:
 	docker build \
-	-f deploy/docker/dockerfile.models \
+	-f deploy/docker/dockerfile.brains \
 	-t $(SERVICE_IMAGE) \
 	--build-arg BUILD_REF=$(VERSION) \
 	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
@@ -69,14 +69,14 @@ go-tidy:
 	go mod tidy
 
 go-run:
-	go run cmd/services/models-api/main.go
+	go run cmd/services/brains-api/main.go
 
 # ================================================================
 # Helm
 
 helm-install:
-	helm install $(RELEASE_NAME) deploy/helm/models \
-	-f deploy/k8s/dev/models/values.yaml \
+	helm install $(RELEASE_NAME) deploy/helm/brains \
+	-f deploy/k8s/dev/brains/values.yaml \
 	--create-namespace \
 	--namespace $(NAMESPACE)
 
@@ -89,8 +89,8 @@ helm-uninstall:
 	helm uninstall $(RELEASE_NAME) --namespace $(NAMESPACE)
 
 helm-upgrade:
-	helm upgrade $(RELEASE_NAME) deploy/helm/models \
-	-f deploy/k8s/dev/models/values.yaml \
+	helm upgrade $(RELEASE_NAME) deploy/helm/brains \
+	-f deploy/k8s/dev/brains/values.yaml \
 	--namespace $(NAMESPACE)
 
 # ================================================================
@@ -140,5 +140,5 @@ telepresence-down:
 test-local:
 	curl -il localhost:3000/test
 
-test-endpoint:
+test-debug:
 	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000/debug/pprof/

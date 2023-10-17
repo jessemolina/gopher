@@ -10,13 +10,13 @@ import (
 
 	"github.com/jessemolina/gopher/pkg/config"
 	"github.com/jessemolina/gopher/pkg/log"
-	"github.com/jessemolina/gopher/internal/web/v1/debug"
+	"github.com/jessemolina/gopher/internal/api/v1/debug"
 )
 
 var build = "develop"
 
 func main() {
-	logger := log.NewLogger("models-api")
+	logger := log.NewLogger("brains-api")
 
 	err := run(logger)
 	if err != nil {

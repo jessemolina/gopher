@@ -1,25 +1,25 @@
-FROM golang:1.21 as build_models-api
+FROM golang:1.21 as build_brains-api
 ENV CGO_ENABLED 0
 ARG BUILD_REF
 
 # Build the Go binary.
 COPY . /service
-WORKDIR /service/cmd/services/models-api
+WORKDIR /service/cmd/services/brains-api
 RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
 # Run the Go binary.
 FROM alpine:3.18
 ARG BUILD_DATE
 ARG BUILD_REF
-RUN addgroup -g 1000 -S models && \
-    adduser -u 1000 -h /service -G models -S models
-COPY --from=build_models-api --chown=models:models /service/cmd/services/models-api/models-api /service/models-api
+RUN addgroup -g 1000 -S brains && \
+    adduser -u 1000 -h /service -G brains -S brains
+COPY --from=build_brains-api --chown=brains:brains /service/cmd/services/brains-api/brains-api /service/brains-api
 WORKDIR /service
-USER models
-CMD ["./models-api"]
+USER brains
+CMD ["./brains-api"]
 
 LABEL description="The Models API service for the Gopher project" \
       version="${BUILD_REF}}" \
       created="$BUILD_DATE}" \
       maintainer="Jesse Molina<jesse@jessemolina.xyz>" \
-      source="https://github.com/gopher/cmd/services/models-api"
+      source="https://github.com/gopher/cmd/services/brains-api"
