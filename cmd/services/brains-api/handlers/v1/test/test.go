@@ -1,13 +1,13 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 )
 
 // HandleTest handles responds status in JSON format.
-func HandleTest(w http.ResponseWriter, r *http.Request) {
-
+func HandleTest(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	status := struct {
 		Status string
 	}{
@@ -15,4 +15,6 @@ func HandleTest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(status)
+
+	return nil
 }
