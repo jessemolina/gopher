@@ -144,4 +144,7 @@ test-debug:
 	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000/debug/pprof/
 
 test-api:
-	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/test
+	curl -X GET -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/test
+
+test-api-error:
+	curl -X POST -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/test
