@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers/v1/test"
+	"github.com/jessemolina/gopher/internal/api/v1/mid"
 	"github.com/jessemolina/gopher/pkg/web"
 )
 
@@ -12,7 +13,7 @@ type APIMuxConfig struct {
 }
 
 func APIMux(cfg APIMuxConfig) *web.App {
-	app := web.NewApp()
+	app := web.NewApp(mid.Logger(cfg.Log))
 
 	app.GET("/test", test.HandleTest)
 
