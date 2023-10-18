@@ -142,3 +142,6 @@ test-local:
 
 test-debug:
 	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000/debug/pprof/
+
+test-api:
+	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/test
