@@ -14,18 +14,23 @@ type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) e
 // App is a custom web application.
 type App struct {
 	*http.ServeMux
+	mw []Middleware
 }
 
 // NewApp is creates a new custom web application.
-func NewApp() *App {
+func NewApp(mw ...Middleware) *App {
 	app := &App{
-		http.NewServeMux(),
+		ServeMux: http.NewServeMux(),
+		mw:       mw,
 	}
 
 	return app
 }
 
+// handle wraps middleware functions to the Handler and registers it to the serve mux.
 func (a *App) handle(method string, path string, handler Handler) {
+	handler = wrapMiddleware(handler, a.mw)
+
 	h := func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
 			http.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
