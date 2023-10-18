@@ -14,7 +14,7 @@ type APIMuxConfig struct {
 func APIMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp()
 
-	app.HandleFunc("/test", test.HandleTest)
+	app.GET("/test", test.HandleTest)
 
 	return app
 }
