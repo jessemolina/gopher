@@ -8,15 +8,16 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers"
+	"github.com/jessemolina/gopher/internal/api/v1/debug"
 	"github.com/jessemolina/gopher/pkg/config"
 	"github.com/jessemolina/gopher/pkg/log"
-	"github.com/jessemolina/gopher/internal/web/v1/debug"
 )
 
 var build = "develop"
 
 func main() {
-	logger := log.NewLogger("models-api")
+	logger := log.NewLogger("brains-api")
 
 	err := run(logger)
 	if err != nil {
@@ -44,7 +45,6 @@ func run(log *slog.Logger) error {
 	// ================================================================
 	// Start the debug service.
 
-
 	log.Info("starting debug server", "port", cfg.DebugPort)
 
 	// TODO Serve the debug service with its own goroutine.
@@ -59,6 +59,20 @@ func run(log *slog.Logger) error {
 	// Start the api service.
 
 	log.Info("starting api server", "port", cfg.APIPort)
+
+	apiMux := handlers.APIMux(handlers.APIMuxConfig{
+		Log: log,
+	})
+
+	server := &http.Server{
+		Addr:    ":" + cfg.APIPort,
+		Handler: apiMux,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		return err
+	}
 
 	// ================================================================
 	// Shutdown the service.

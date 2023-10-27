@@ -1,4 +1,0 @@
-apiVersion: v2
-name: models-api
-description: A Helm chart for deploying the Gopher Models API.
-version: 0.1.0

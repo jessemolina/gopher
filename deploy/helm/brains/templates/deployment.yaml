@@ -22,9 +22,9 @@ spec:
       - name: {{ .Values.service.name }}
         image: {{ .Values.service.image }}
         ports:
-        - name: models-api
+        - name: brains-api
           containerPort: {{ .Values.service.ports.api }}
-        - name: models-debug
+        - name: brains-debug
           containerPort: {{ .Values.service.ports.debug }}
         env:
         - name: GOMAXPROCS

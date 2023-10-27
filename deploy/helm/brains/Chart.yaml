@@ -1,0 +1,4 @@
+apiVersion: v2
+name: brains-api
+description: A Helm chart for deploying the Gopher Brains API.
+version: 0.1.0
