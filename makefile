@@ -16,8 +16,9 @@ RELEASE_NAME    := brains-api
 # ================================================================
 # Developer
 
-dev-up: kind-up \
+dev-up: docker-pull \
 		docker-build \
+		kind-up \
 		kind-load \
 		telepresence-up \
 		helm-install
