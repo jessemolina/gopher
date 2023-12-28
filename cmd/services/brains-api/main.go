@@ -17,6 +17,7 @@ import (
 var build = "develop"
 
 func main() {
+	// TODO Replace the logger with telemetry pkg logger.
 	logger := log.NewLogger("brains-api")
 
 	err := run(logger)
@@ -41,6 +42,9 @@ func run(log *slog.Logger) error {
 	}{}
 
 	config.Parse(&cfg)
+
+
+	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	// ================================================================
 	// Start the debug service.
