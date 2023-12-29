@@ -16,8 +16,9 @@ RELEASE_NAME    := brains-api
 # ================================================================
 # Developer
 
-dev-up: kind-up \
+dev-up: docker-pull \
 		docker-build \
+		kind-up \
 		kind-load \
 		telepresence-up \
 		helm-install
@@ -47,6 +48,9 @@ docker-build:
 
 docker-logs:
 	docker logs $(RELEASE_NAME)
+
+docker-pull:
+	docker pull $(TELEPRESENCE)
 
 docker-run:
 	docker run -d --name $(RELEASE_NAME) $(SERVICE_IMAGE)
@@ -148,3 +152,4 @@ test-api:
 
 test-api-error:
 	curl -X POST -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/test
+
