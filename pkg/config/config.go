@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -78,7 +77,7 @@ func makeInfo(cfg interface{}) []fieldInfo {
 		}
 		name := strings.ToLower(t.Field(i).Name)
 		desc := splitCamelCase(t.Field(i).Name, " ")
-		env := screamingSnakeCase(desc, " ")
+		env := toScreamingSnakeCase(desc, " ")
 		kind := t.Field(i).Type.Kind()
 		value := v.Field(i)
 		tags := make(map[string]string)
@@ -112,44 +111,3 @@ func makeInfo(cfg interface{}) []fieldInfo {
 }
 
 
-// splitName splits a camel case string into a delimeted-split string.
-func splitCamelCase(name string, delim string) string {
-	pattern := `[A-Z][a-z]+`
-	r := regexp.MustCompile(pattern)
-
-	matches := r.FindAllStringIndex(name, -1)
-
-	value := ""
-
-	if len(matches) == 0 {
-		return value
-	}
-
-	if matches[0][0] != 0 {
-		start := 0
-		end := matches[0][0]
-		value += name[start:end]
-	}
-
-	for _, match := range matches {
-		start, stop := match[0], match[1]
-		word := name[start:stop]
-
-		if match[0] != 0 {
-			word = delim + word
-		}
-
-		value += word
-	}
-
-	return value
-}
-
-// screamingSnakeCase converts a delimeted string into an all caps, underscore-split string.
-func screamingSnakeCase(name string, delim string) string {
-	value := name
-	value = strings.ReplaceAll(value, delim, "_")
-	value = strings.ToUpper(value)
-
-	return value
-}
