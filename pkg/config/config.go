@@ -12,7 +12,8 @@ import (
 /*
   TODO Determine how to pass fi string up the call stack for the logger.
   TODO Brainstorm on how other fi.tags, such as mask, can be used
- */
+  TODO Check for whether a field is of type nested struct
+*/
 
 // fieldInfo represents information about a field in a struct.
 type fieldInfo struct {
@@ -24,41 +25,58 @@ type fieldInfo struct {
 	tags  map[string]string
 }
 
+// Usage returns a string that describes the field's usage.
+func (fi *fieldInfo) Usage(message string) string {
+	return fmt.Sprintf(message, fi.desc, fi.name, fi.env)
+}
+
+// Default returns the field's default value, prioritizing OS ENV,
+// and defaulting to tag value.
+func (fi *fieldInfo) Default() string {
+	defaultValue, _ := fi.tags["default"]
+	envValue := os.Getenv(fi.env)
+	if envValue != "" {
+		defaultValue = envValue
+	}
+	return defaultValue
+}
+
+// SetFlag sets the field's CLI flag option.
+func (fi *fieldInfo) SetFlag() {
+	message := "%v\n--%v/$%v"
+
+	usage := fi.Usage(message)
+	defaultString := fi.Default()
+
+	switch fi.kind {
+	case reflect.String:
+		flag.StringVar(
+			fi.value.Addr().Interface().(*string),
+			fi.name,
+			defaultString,
+			usage)
+	case reflect.Int:
+		intValue, err := strconv.Atoi(defaultString)
+		if err != nil {
+			intValue = 0
+		}
+
+		flag.IntVar(
+			fi.value.Addr().Interface().(*int),
+			fi.name,
+			intValue,
+			usage)
+	}
+
+}
+
 // Parse unmarshalls the given cfg from os env vars, flag values, and config field tags.
 func Parse(cfg interface{}) {
 
 	fieldsInfo := makeInfo(cfg)
 
-	message := "%v\n--%v/$%v"
-
 	for _, fi := range fieldsInfo {
-		usage := fmt.Sprintf(message, fi.desc, fi.name, fi.env)
-		defaultString, _ := fi.tags["default"]
-
-		envString := os.Getenv(fi.env)
-		if envString != "" {
-			defaultString = envString
-		}
-
-		switch fi.kind {
-		case reflect.String:
-			flag.StringVar(
-				fi.value.Addr().Interface().(*string),
-				fi.name,
-				defaultString,
-				usage)
-		case reflect.Int:
-			intValue, err := strconv.Atoi(defaultString)
-			if err != nil {
-				intValue = 0
-			}
-
-			flag.IntVar(
-				fi.value.Addr().Interface().(*int),
-				fi.name,
-				intValue,
-				usage)
-		}
+		fi.SetFlag()
 	}
 
 	flag.Parse()
@@ -109,5 +127,3 @@ func makeInfo(cfg interface{}) []fieldInfo {
 
 	return fieldsInfo
 }
-
-
