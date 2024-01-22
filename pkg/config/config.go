@@ -10,9 +10,7 @@ import (
 )
 
 /*
-  TODO Determine how to pass fi string up the call stack for the logger.
   TODO Brainstorm on how other fi.tags, such as mask, can be used
-  TODO Check for whether a field is of type nested struct
 */
 
 // fieldInfo represents information about a field in a struct.
@@ -73,57 +71,72 @@ func (fi *fieldInfo) SetFlag() {
 // Parse unmarshalls the given cfg from os env vars, flag values, and config field tags.
 func Parse(cfg interface{}) {
 
-	fieldsInfo := makeInfo(cfg)
+	fieldInfos := makeInfo(cfg, "")
 
-	for _, fi := range fieldsInfo {
+	for _, fi := range fieldInfos {
 		fi.SetFlag()
 	}
 
 	flag.Parse()
 }
 
-// makeInfo returns an array of fieldInfo for each field in cfg.
-func makeInfo(cfg interface{}) []fieldInfo {
-	fieldsInfo := []fieldInfo{}
+// makeInfo builds a collection of fieldInfo.
+func makeInfo(cfg interface{}, prefix string) []fieldInfo {
+	fieldInfos := []fieldInfo{}
 
-	t := reflect.TypeOf(cfg).Elem()
-	v := reflect.ValueOf(cfg).Elem()
+	values := reflect.ValueOf(cfg)
 
-	for i := 0; i < t.NumField(); i++ {
-		if t.Field(i).PkgPath != "" {
-			break
-		}
-		name := strings.ToLower(t.Field(i).Name)
-		desc := splitCamelCase(t.Field(i).Name, " ")
-		env := toScreamingSnakeCase(desc, " ")
-		kind := t.Field(i).Type.Kind()
-		value := v.Field(i)
-		tags := make(map[string]string)
-
-		configTag := t.Field(i).Tag.Get("config")
-		configList := strings.Split(configTag, ",")
-
-		for _, config := range configList {
-			values := strings.Split(config, ":")
-			if len(values) == 2 {
-				tags[values[0]] = values[1]
-			} else {
-				tags[values[0]] = "true"
-			}
-
-		}
-
-		info := fieldInfo{
-			name:  name,
-			desc:  desc,
-			env:   env,
-			kind:  kind,
-			value: value,
-			tags:  tags,
-		}
-
-		fieldsInfo = append(fieldsInfo, info)
+	if values.Kind() == reflect.Pointer {
+		values = values.Elem()
 	}
 
-	return fieldsInfo
+	for i := 0; i < values.NumField(); i++ {
+		sf := values.Type().Field(i)
+		v := values.Field(i)
+
+		if v.Kind() == reflect.Struct {
+			newPrefix := sf.Name
+			nestedInfo := makeInfo(v.Interface(), newPrefix)
+			fieldInfos = append(fieldInfos, nestedInfo...)
+		} else {
+			fi := newFieldInfo(sf, v, prefix)
+			fieldInfos = append(fieldInfos, fi)
+		}
+
+	}
+
+	return fieldInfos
+}
+
+// newFieldInfo is a constructor for FieldInfo.
+func newFieldInfo(sf reflect.StructField, rv reflect.Value, prefix string) fieldInfo {
+	name := strings.ToLower(prefix + sf.Name)
+	desc := splitCamelCase(prefix+sf.Name, " ")
+	env := toScreamingSnakeCase(desc, " ")
+	kind := rv.Type().Kind()
+	value := rv
+	tags := make(map[string]string)
+
+	configTag := sf.Tag.Get("config")
+	configList := strings.Split(configTag, ",")
+
+	for _, config := range configList {
+		values := strings.Split(config, ":")
+		if len(values) == 2 {
+			tags[values[0]] = values[1]
+		} else {
+			tags[values[0]] = "true"
+		}
+
+	}
+
+	return fieldInfo{
+		name:  name,
+		desc:  desc,
+		env:   env,
+		kind:  kind,
+		value: value,
+		tags:  tags,
+	}
+
 }
