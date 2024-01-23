@@ -69,9 +69,14 @@ func (fi *fieldInfo) SetFlag() {
 }
 
 // Parse unmarshalls the given cfg from os env vars, flag values, and config field tags.
-func Parse(cfg interface{}) {
+func Parse(cfg interface{}, prefixes ...string) {
+	prefix := ""
 
-	fieldInfos := makeInfo(cfg, "")
+	if len(prefixes) > 0 {
+		prefix = strings.Join(prefixes, "")
+	}
+
+	fieldInfos := makeInfo(cfg,prefix)
 
 	for _, fi := range fieldInfos {
 		fi.SetFlag()
@@ -95,7 +100,7 @@ func makeInfo(cfg interface{}, prefix string) []fieldInfo {
 		v := values.Field(i)
 
 		if v.Kind() == reflect.Struct {
-			newPrefix := sf.Name
+			newPrefix := prefix + sf.Name
 			nestedInfo := makeInfo(v.Interface(), newPrefix)
 			fieldInfos = append(fieldInfos, nestedInfo...)
 		} else {
@@ -110,8 +115,8 @@ func makeInfo(cfg interface{}, prefix string) []fieldInfo {
 
 // newFieldInfo is a constructor for FieldInfo.
 func newFieldInfo(sf reflect.StructField, rv reflect.Value, prefix string) fieldInfo {
-	name := strings.ToLower(prefix + sf.Name)
 	desc := splitCamelCase(prefix+sf.Name, " ")
+	name := toKebabCase(desc, " ")
 	env := toScreamingSnakeCase(desc, " ")
 	kind := rv.Type().Kind()
 	value := rv
