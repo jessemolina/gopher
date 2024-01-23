@@ -38,11 +38,22 @@ func splitCamelCase(name string, delim string) string {
 	return value
 }
 
-// screamingSnakeCase converts a delimeted string into an all caps, underscore-split string.
+// toScreamingSnakeCase converts a delimeted string into an all caps, underscore-split string.
 func toScreamingSnakeCase(name string, delim string) string {
 	value := name
 	value = strings.ReplaceAll(value, delim, "_")
 	value = strings.ToUpper(value)
 
 	return value
+}
+
+// toKebabcase converts a delimeted string into a lowercase, hyphen-split string.
+func toKebabCase(name string, delim string) string {
+	value := name
+	value = strings.ReplaceAll(value, delim, "-")
+	value = strings.ToLower(value)
+
+	return value
+
+   return ""
 }
