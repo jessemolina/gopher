@@ -5,42 +5,20 @@ import (
 	"strings"
 )
 
-// splitName splits a camel case string into a delimeted-split string.
-func splitCamelCase(name string, delim string) string {
-	pattern := `[A-Z][a-z]+`
-	r := regexp.MustCompile(pattern)
+// splitCamelCase splits a camel case string into a delimeted-split string.
+func splitCamelCase(input string, delim string) string {
+	// Regular expression to match the position before a lowercase letter that follows uppercase letters
+	re := regexp.MustCompile(`([a-z0-9])([A-Z])|([A-Z])([A-Z][a-z])`)
 
-	matches := r.FindAllStringIndex(name, -1)
-
-	value := ""
-
-	if len(matches) == 0 {
-		return value
-	}
-
-	if matches[0][0] != 0 {
-		start := 0
-		end := matches[0][0]
-		value += name[start:end]
-	}
-
-	for _, match := range matches {
-		start, stop := match[0], match[1]
-		word := name[start:stop]
-
-		if match[0] != 0 {
-			word = delim + word
-		}
-
-		value += word
-	}
-
-	return value
+	// Replace matched positions with a delimeter
+	return re.ReplaceAllStringFunc(input, func(str string) string {
+		return str[:len(str)/2] + delim + str[len(str)/2:]
+	})
 }
 
 // toScreamingSnakeCase converts a delimeted string into an all caps, underscore-split string.
-func toScreamingSnakeCase(name string, delim string) string {
-	value := name
+func toScreamingSnakeCase(input string, delim string) string {
+	value := input
 	value = strings.ReplaceAll(value, delim, "_")
 	value = strings.ToUpper(value)
 
@@ -48,12 +26,10 @@ func toScreamingSnakeCase(name string, delim string) string {
 }
 
 // toKebabcase converts a delimeted string into a lowercase, hyphen-split string.
-func toKebabCase(name string, delim string) string {
-	value := name
+func toKebabCase(input string, delim string) string {
+	value := input
 	value = strings.ReplaceAll(value, delim, "-")
 	value = strings.ToLower(value)
 
 	return value
-
-   return ""
 }

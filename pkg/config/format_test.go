@@ -17,14 +17,17 @@ type FormatTest struct {
 // Test function for splitCamelCase.
 func TestSplitCamelCase(t *testing.T) {
 	tests := []FormatTest{
-		{"helloWorld", "_", "hello_World"},
+		{"debugPort", "_", "debug_Port"},
+		{"APIPort", " ", "API Port"},
+		{"ServiceAPIPort", "-", "Service-API-Port"},
+		{"RESTEndpoint", "_", "REST_Endpoint"},
 	}
 
 	for _, test := range tests {
 		results := splitCamelCase(test.input, test.delim)
 
 		if test.expected != results {
-			t.Fatalf("\nUnexpected value" + message, test.expected, results)
+			t.Fatalf("\nUnexpected value"+message, test.expected, results)
 		}
 
 	}
@@ -41,9 +44,10 @@ func TestToScreamingSnakeCase(t *testing.T) {
 		results := toScreamingSnakeCase(test.input, test.delim)
 
 		if test.expected != results {
-			t.Fatalf("\nUnexpected value" + message, test.expected, results)
+			t.Fatalf("\nUnexpected value"+message, test.expected, results)
 		}
 
 	}
 
 }
+
