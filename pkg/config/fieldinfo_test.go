@@ -1,11 +1,19 @@
 package config
+
 /*
+  TODO Make tests for NewFieldInfo.
 import (
-	"fmt"
+	"testing"
 )
 
 func TestNewFieldInfo(t *testing.T) {
-	a := "hello"
+	test := struct {
+		first string
+		second int
+	}{
+		"hello",
+		1990,
+	}
 
 }
 */
