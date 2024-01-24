@@ -15,7 +15,7 @@ type FormatTest struct {
 }
 
 // Test function for splitCamelCase.
-func TestSplitCamelCase(t *testing.T) {
+func TestParseCamelCase(t *testing.T) {
 	tests := []FormatTest{
 		{"debugPort", "_", "debug_Port"},
 		{"APIPort", " ", "API Port"},
@@ -24,7 +24,7 @@ func TestSplitCamelCase(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		results := splitCamelCase(test.input, test.delim)
+		results := parseCamelCase(test.input, test.delim)
 
 		if test.expected != results {
 			t.Fatalf("\nUnexpected value"+message, test.expected, results)
