@@ -16,9 +16,11 @@ func TestMakeInfo(t *testing.T) {
 		}
 	}{}
 
+	fmt.Println(cfg)
+
 	results := makeInfo(&cfg, "Gopher")
 	for _, r := range results {
-		fmt.Println(r.name, r.desc, r.env)
+		fmt.Println(r.name, r.OSEnv())
 	}
 
 }
