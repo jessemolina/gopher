@@ -37,39 +37,39 @@ func run(log *slog.Logger) error {
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	cfg := struct {
-		APIPort   string `config:"default:3000"`
-		DebugPort string `config:"default:4000"`
+		Service struct {
+			APIPort   string `config:"default:3000"`
+			DebugPort string `config:"default:4000"`
+		}
 	}{}
 
-	config.Parse(&cfg)
-
+	config.Parse(&cfg, "Brains")
 
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	// ================================================================
 	// Start the debug service.
 
-	log.Info("starting debug server", "port", cfg.DebugPort)
+	log.Info("starting debug server", "port", cfg.Service.DebugPort)
 
 	// TODO Serve the debug service with its own goroutine.
 
 	go func() {
-		if err := http.ListenAndServe(":" + cfg.DebugPort, debug.DefaultMux()); err != nil {
+		if err := http.ListenAndServe(":"+cfg.Service.DebugPort, debug.DefaultMux()); err != nil {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
-
 	// ================================================================
 	// Start the api service.
 
-	log.Info("starting api server", "port", cfg.APIPort)
+	log.Info("starting api server", "port", cfg.Service.APIPort)
 
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
 		Log: log,
 	})
 
 	server := &http.Server{
-		Addr:    ":" + cfg.APIPort,
+		Addr:    ":" + cfg.Service.APIPort,
 		Handler: apiMux,
 	}
 
