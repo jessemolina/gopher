@@ -8,7 +8,7 @@ import (
 var message = "\nExpected:\t %v\nResults:\t %v\n"
 
 // Test case scenario for string formatting functions.
-type FormatTest struct {
+type ParseTest struct {
 	input    string
 	delim    string
 	expected string
@@ -16,7 +16,7 @@ type FormatTest struct {
 
 // Test function for splitCamelCase.
 func TestParseCamelCase(t *testing.T) {
-	tests := []FormatTest{
+	tests := []ParseTest{
 		{"debugPort", "_", "debug_Port"},
 		{"APIPort", " ", "API Port"},
 		{"ServiceAPIPort", "-", "Service-API-Port"},
@@ -36,7 +36,7 @@ func TestParseCamelCase(t *testing.T) {
 
 // Test function toScreamingSnakeCase.
 func TestToScreamingSnakeCase(t *testing.T) {
-	tests := []FormatTest{
+	tests := []ParseTest{
 		{"hello_World", "_", "HELLO_WORLD"},
 	}
 
