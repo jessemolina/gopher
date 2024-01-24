@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -16,11 +15,11 @@ func TestMakeInfo(t *testing.T) {
 		}
 	}{}
 
-	fmt.Println(cfg)
-
 	results := makeInfo(&cfg, "Gopher")
 	for _, r := range results {
-		fmt.Println(r.name, r.OSEnv())
+		if r.pointer == nil {
+			t.Fatalf("\nfieldInfo pointer value is nil")
+		}
 	}
 
 }
