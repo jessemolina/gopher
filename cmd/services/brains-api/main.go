@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -34,8 +35,6 @@ func run(log *slog.Logger) error {
 	// ================================================================
 	// Configuration
 
-	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
-
 	cfg := struct {
 		Service struct {
 			APIPort   string `config:"default:3000"`
@@ -59,10 +58,12 @@ func run(log *slog.Logger) error {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
+
 	// ================================================================
 	// Start the api service.
 
-	log.Info("starting api server", "port", cfg.Service.APIPort)
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
 		Log: log,
@@ -73,21 +74,23 @@ func run(log *slog.Logger) error {
 		Handler: apiMux,
 	}
 
-	err := server.ListenAndServe()
-	if err != nil {
-		return err
-	}
+	serverErrors := make(chan error, 1)
+
+	go func() {
+		log.Info("starting api server", "port", cfg.Service.APIPort)
+		serverErrors <- server.ListenAndServe()
+	}()
 
 	// ================================================================
 	// Shutdown the service.
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-
-	sig := <-shutdown
-
-	log.Info("shutdown started", "signal", sig)
-	defer log.Info("shutdown complete", "signal", sig)
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+	case sig := <-shutdown:
+		log.Info("shutdown started", "signal", sig)
+		defer log.Info("shutdown complete", "signal", sig)
+	}
 
 	return nil
 }
