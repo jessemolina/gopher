@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers/v1/test"
-	"github.com/jessemolina/gopher/internal/api/v1/mid"
+	"github.com/jessemolina/gopher/internal/api/mid"
 	"github.com/jessemolina/gopher/pkg/web"
 )
 

@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers"
-	"github.com/jessemolina/gopher/internal/api/v1/debug"
+	"github.com/jessemolina/gopher/internal/api/debug"
 	"github.com/jessemolina/gopher/pkg/config"
 	"github.com/jessemolina/gopher/pkg/log"
 )
