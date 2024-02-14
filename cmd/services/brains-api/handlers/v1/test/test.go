@@ -2,8 +2,9 @@ package test
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/jessemolina/gopher/pkg/web"
 )
 
 // HandleTest handles responds status in JSON format.
@@ -14,7 +15,7 @@ func HandleTest(ctx context.Context, w http.ResponseWriter, r *http.Request) err
 		Status: "OK",
 	}
 
-	json.NewEncoder(w).Encode(status)
+	web.Response(ctx, w, http.StatusOK, status)
 
 	return nil
 }
