@@ -51,8 +51,6 @@ func run(log *slog.Logger) error {
 
 	log.Info("starting debug server", "port", cfg.Service.DebugPort)
 
-	// TODO Serve the debug service with its own goroutine.
-
 	go func() {
 		if err := http.ListenAndServe(":"+cfg.Service.DebugPort, debug.DefaultMux()); err != nil {
 			log.Error("shutting down debug server", "status", "ERROR")

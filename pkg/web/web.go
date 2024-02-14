@@ -6,7 +6,8 @@ import (
 	"net/http"
 )
 
-// TODO Build Mux struct that embeds a mux, shutdown sig, and mw functions.
+// TODO Embed web App with shutdown signal.
+// TODO Consider whether to use custom Ctx with embeded ResponseWriter for response flex (i.e. JSON vs XML).
 
 // Handler is a handle function signature that accounts for context and error.
 type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
