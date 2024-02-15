@@ -16,6 +16,9 @@ func Logger(log *slog.Logger) web.Middleware {
 
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 
+			// TODO Determine whether any data from context.Context should be logged.
+			// TODO Determine if URL Path query needs to be formatted and logged.
+
 			log.Info("request started", "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 
 			err := handler(ctx, w, r)
