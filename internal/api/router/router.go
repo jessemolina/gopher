@@ -29,6 +29,7 @@ type RouteGroup interface {
 
 // Build composes an http Handler from the given route group based on Config.
 func Build(rg RouteGroup, cfg Config) http.Handler {
+	// TODO Build a mid.Panics mw and append it to Build mux.
 	mux := web.NewMux(
 		mid.Logger(cfg.Log),
 		mid.Meter(),
