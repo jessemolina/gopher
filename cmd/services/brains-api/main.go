@@ -1,24 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
-	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers"
-	"github.com/jessemolina/gopher/internal/api/v1/debug"
+	"github.com/jessemolina/gopher/cmd/services/brains-api/v1/groups/tests"
+	"github.com/jessemolina/gopher/internal/api/debug"
+	"github.com/jessemolina/gopher/internal/api/router"
 	"github.com/jessemolina/gopher/pkg/config"
-	"github.com/jessemolina/gopher/pkg/log"
+	"github.com/jessemolina/gopher/pkg/telemetry"
+	"go.opentelemetry.io/otel"
 )
 
 var build = "develop"
+var service = "Brains"
 
 func main() {
-	// TODO Replace the logger with telemetry pkg logger.
-	logger := log.NewLogger("brains-api")
+	logger := telemetry.NewLogger("brains-api")
 
 	err := run(logger)
 	if err != nil {
@@ -31,63 +35,84 @@ func main() {
 // run starts the api service.
 func run(log *slog.Logger) error {
 
-	// ================================================================
-	// Configuration
-
-	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+	/* Define service configuration */
 
 	cfg := struct {
-		Service struct {
-			APIPort   string `config:"default:3000"`
-			DebugPort string `config:"default:4000"`
+		Server struct {
+			APIPort         string        `config:"default:3000"`
+			DebugPort       string        `config:"default:4000"`
+			ReadTimeout     time.Duration `config:"default:5s"`
+			WriteTimeout    time.Duration `config:"default:10s"`
+			IdleTimeout     time.Duration `config:"default:120s"`
+			ShutdownTimeout time.Duration `config:"default:20s"`
+		}
+		OTEL struct {
+			MeterExport string `config:"default:stdout"`
 		}
 	}{}
 
-	config.Parse(&cfg, "Brains")
+	config.Parse(&cfg, service)
 
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
-	// ================================================================
-	// Start the debug service.
+	/* Start the debug service */
 
-	log.Info("starting debug server", "port", cfg.Service.DebugPort)
-
-	// TODO Serve the debug service with its own goroutine.
+	log.Info("starting debug server", "port", cfg.Server.DebugPort)
 
 	go func() {
-		if err := http.ListenAndServe(":"+cfg.Service.DebugPort, debug.DefaultMux()); err != nil {
+		if err := http.ListenAndServe(":"+cfg.Server.DebugPort, debug.DefaultMux()); err != nil {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
-	// ================================================================
-	// Start the api service.
 
-	log.Info("starting api server", "port", cfg.Service.APIPort)
+	/* Enable Telemetry via OTEL */
 
-	apiMux := handlers.APIMux(handlers.APIMuxConfig{
-		Log: log,
+	mp, err := telemetry.NewMeterProvider(telemetry.Config{
+		ServiceName:  service,
+		ExporterType: cfg.OTEL.MeterExport,
 	})
 
-	server := &http.Server{
-		Addr:    ":" + cfg.Service.APIPort,
-		Handler: apiMux,
-	}
-
-	err := server.ListenAndServe()
 	if err != nil {
 		return err
 	}
 
-	// ================================================================
-	// Shutdown the service.
+	otel.SetMeterProvider(mp)
+
+	log.Info("set otel meter provider", "meter", cfg.OTEL.MeterExport)
+
+	/* Start the api service */
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	sig := <-shutdown
+	rc := router.Config{
+		Log: log,
+	}
 
-	log.Info("shutdown started", "signal", sig)
-	defer log.Info("shutdown complete", "signal", sig)
+	api := &http.Server{
+		Addr:         ":" + cfg.Server.APIPort,
+		Handler:      router.Build(tests.Routes(), rc),
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
+	}
+
+	serverErrors := make(chan error, 1)
+
+	go func() {
+		log.Info("starting api server", "port", cfg.Server.APIPort)
+		serverErrors <- api.ListenAndServe()
+	}()
+
+	/* Shutdown the service */
+
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+	case sig := <-shutdown:
+		log.Info("shutdown started", "signal", sig)
+		defer log.Info("shutdown complete", "signal", sig)
+	}
 
 	return nil
 }
