@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jessemolina/gopher/internal/api/mid"
 	"github.com/jessemolina/gopher/pkg/web"
 )
 
@@ -28,7 +29,11 @@ type RouteGroup interface {
 
 // Build composes an http Handler from the given route group based on Config.
 func Build(rg RouteGroup, cfg Config) http.Handler {
-	mux := web.NewMux()
+	mux := web.NewMux(
+		mid.Logger(cfg.Log),
+		mid.Errors(cfg.Log),
+		mid.Signal(cfg.Shutdown),
+	)
 
 	rg.Register(mux, cfg)
 
