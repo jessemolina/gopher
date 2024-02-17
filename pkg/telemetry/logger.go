@@ -6,7 +6,7 @@ import (
 )
 
 // NewLogger returns a structured logger that writes to stdout.
-func NewLogger(c Config) *slog.Logger {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("service", c.ServiceName)
+func NewLogger(service string) *slog.Logger {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("service", service)
 	return logger
 }
