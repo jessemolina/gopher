@@ -14,14 +14,16 @@ import (
 	"github.com/jessemolina/gopher/internal/api/debug"
 	"github.com/jessemolina/gopher/internal/api/router"
 	"github.com/jessemolina/gopher/pkg/config"
-	"github.com/jessemolina/gopher/pkg/log"
+	"github.com/jessemolina/gopher/pkg/telemetry"
+	"go.opentelemetry.io/otel"
 )
 
 var build = "develop"
+var service = "Brains"
 
 func main() {
 	// TODO Replace the logger with telemetry pkg logger.
-	logger := log.NewLogger("brains-api")
+	logger := telemetry.NewLogger("brains-api")
 
 	err := run(logger)
 	if err != nil {
@@ -46,9 +48,12 @@ func run(log *slog.Logger) error {
 			IdleTimeout     time.Duration `config:"default:120s"`
 			ShutdownTimeout time.Duration `config:"default:20s"`
 		}
+		OTEL struct {
+			MeterExport string `config:"default:stdout"`
+		}
 	}{}
 
-	config.Parse(&cfg, "Brains")
+	config.Parse(&cfg, service)
 
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
@@ -62,6 +67,22 @@ func run(log *slog.Logger) error {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
+
+	// ================================================================
+	// Enable OpenTelmetry
+
+	mp, err := telemetry.NewMeterProvider(telemetry.Config{
+		ServiceName:  service,
+		ExporterType: cfg.OTEL.MeterExport,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	otel.SetMeterProvider(mp)
+
+	log.Info("set otel meter provider", "meter", cfg.OTEL.MeterExport)
 
 	// ================================================================
 	// Start the api service.
