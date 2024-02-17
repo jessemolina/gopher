@@ -8,9 +8,11 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
-	"github.com/jessemolina/gopher/cmd/services/brains-api/handlers"
+	"github.com/jessemolina/gopher/cmd/services/brains-api/v1/groups/tests"
 	"github.com/jessemolina/gopher/internal/api/debug"
+	"github.com/jessemolina/gopher/internal/api/router"
 	"github.com/jessemolina/gopher/pkg/config"
 	"github.com/jessemolina/gopher/pkg/log"
 )
@@ -36,9 +38,13 @@ func run(log *slog.Logger) error {
 	// Configuration
 
 	cfg := struct {
-		Service struct {
-			APIPort   string `config:"default:3000"`
-			DebugPort string `config:"default:4000"`
+		Server struct {
+			APIPort         string        `config:"default:3000"`
+			DebugPort       string        `config:"default:4000"`
+			ReadTimeout     time.Duration `config:"default:5s"`
+			WriteTimeout    time.Duration `config:"default:10s"`
+			IdleTimeout     time.Duration `config:"default:120s"`
+			ShutdownTimeout time.Duration `config:"default:20s"`
 		}
 	}{}
 
@@ -49,10 +55,10 @@ func run(log *slog.Logger) error {
 	// ================================================================
 	// Start the debug service.
 
-	log.Info("starting debug server", "port", cfg.Service.DebugPort)
+	log.Info("starting debug server", "port", cfg.Server.DebugPort)
 
 	go func() {
-		if err := http.ListenAndServe(":"+cfg.Service.DebugPort, debug.DefaultMux()); err != nil {
+		if err := http.ListenAndServe(":"+cfg.Server.DebugPort, debug.DefaultMux()); err != nil {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
@@ -63,20 +69,23 @@ func run(log *slog.Logger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	apiMux := handlers.APIMux(handlers.APIMuxConfig{
+	rc := router.Config{
 		Log: log,
-	})
+	}
 
-	server := &http.Server{
-		Addr:    ":" + cfg.Service.APIPort,
-		Handler: apiMux,
+	api := &http.Server{
+		Addr:         ":" + cfg.Server.APIPort,
+		Handler:      router.Build(tests.Routes(), rc),
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
 	serverErrors := make(chan error, 1)
 
 	go func() {
-		log.Info("starting api server", "port", cfg.Service.APIPort)
-		serverErrors <- server.ListenAndServe()
+		log.Info("starting api server", "port", cfg.Server.APIPort)
+		serverErrors <- api.ListenAndServe()
 	}()
 
 	// ================================================================
