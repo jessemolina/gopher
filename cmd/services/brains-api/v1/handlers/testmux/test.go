@@ -1,4 +1,4 @@
-package test
+package testmux
 
 import (
 	"context"
@@ -12,7 +12,7 @@ func HandleTest(ctx context.Context, w http.ResponseWriter, r *http.Request) err
 	status := struct {
 		Status string
 	}{
-		Status: "OK",
+		Status: "OKIE DOKIE",
 	}
 
 	web.Response(ctx, w, http.StatusOK, status)
