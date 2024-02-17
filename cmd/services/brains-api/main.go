@@ -36,8 +36,7 @@ func main() {
 // run starts the api service.
 func run(log *slog.Logger) error {
 
-	// ================================================================
-	// Configuration
+	// Define service configuration
 
 	cfg := struct {
 		Server struct {
@@ -57,7 +56,7 @@ func run(log *slog.Logger) error {
 
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
-	// ================================================================
+
 	// Start the debug service.
 
 	log.Info("starting debug server", "port", cfg.Server.DebugPort)
@@ -68,8 +67,8 @@ func run(log *slog.Logger) error {
 		}
 	}()
 
-	// ================================================================
-	// Enable OpenTelmetry
+
+	// Enable Telemetry via OTEL
 
 	mp, err := telemetry.NewMeterProvider(telemetry.Config{
 		ServiceName:  service,
@@ -84,7 +83,6 @@ func run(log *slog.Logger) error {
 
 	log.Info("set otel meter provider", "meter", cfg.OTEL.MeterExport)
 
-	// ================================================================
 	// Start the api service.
 
 	shutdown := make(chan os.Signal, 1)
@@ -109,7 +107,6 @@ func run(log *slog.Logger) error {
 		serverErrors <- api.ListenAndServe()
 	}()
 
-	// ================================================================
 	// Shutdown the service.
 
 	select {
