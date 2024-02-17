@@ -31,6 +31,7 @@ type RouteGroup interface {
 func Build(rg RouteGroup, cfg Config) http.Handler {
 	mux := web.NewMux(
 		mid.Logger(cfg.Log),
+		mid.Meter(),
 		mid.Errors(cfg.Log),
 		mid.Signal(cfg.Shutdown),
 	)
