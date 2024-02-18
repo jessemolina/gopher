@@ -32,7 +32,10 @@ func EncodePrivatePEM(pk *rsa.PrivateKey) ([]byte, error) {
 
 // EncodePublicKey encodes a Public Key PEM block into bytes from a private key.
 func EncodePublicPEM(pk *rsa.PrivateKey) ([]byte, error) {
-	b, _ := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	b, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to decode pub key: %v", err)
+	}
 
 	pem, err := encodePEM(b, "PUBLIC KEY")
 	if err != nil {
