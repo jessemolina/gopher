@@ -30,7 +30,7 @@ func EncodePrivatePEM(pk *rsa.PrivateKey) ([]byte, error) {
 	return pem, nil
 }
 
-// EncodePrivatePEM encodes a Public Key PEM block into bytes.
+// EncodePublicKey encodes a Public Key PEM block into bytes from a private key.
 func EncodePublicPEM(pk *rsa.PrivateKey) ([]byte, error) {
 	b, _ := x509.MarshalPKIXPublicKey(&pk.PublicKey)
 
