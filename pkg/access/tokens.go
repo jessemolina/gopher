@@ -12,7 +12,7 @@ import (
 )
 
 // GenerateToken provides an rsa token with the given claim set and roles.
-func GenerateToken(pk *rsa.PrivateKey, rc jwt.RegisteredClaims, roles []string) ([]byte, error) {
+func GenerateToken(pk *rsa.PrivateKey, rc jwt.RegisteredClaims, roles []string) (string, error) {
 	claims := struct {
 		jwt.RegisteredClaims
 		Roles []string
@@ -23,9 +23,9 @@ func GenerateToken(pk *rsa.PrivateKey, rc jwt.RegisteredClaims, roles []string) 
 
 	method := jwt.GetSigningMethod(jwt.SigningMethodRS256.Name)
 
-	kid, err := PublicKeyID(pk)
+	kid, err := makePublicKid(pk)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to generate KID: %v", err)
+		return "", fmt.Errorf("failed to generate KID: %v", err)
 	}
 
 	token := jwt.NewWithClaims(method, claims)
@@ -33,14 +33,38 @@ func GenerateToken(pk *rsa.PrivateKey, rc jwt.RegisteredClaims, roles []string) 
 
 	signed, err := token.SignedString(pk)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to sign token: %v", err)
+		return "", fmt.Errorf("failed to sign token: %v", err)
 	}
 
-	return []byte(signed), nil
+	return signed, nil
+}
+
+// ValidateToken verifies a token's signature via an RSA public key.
+func ValidateToken(token string, pub *rsa.PublicKey) error {
+	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
+	keyFunc := func(t *jwt.Token) (interface{}, error) {
+		return pub, nil
+	}
+
+	var claims struct {
+		jwt.RegisteredClaims
+		Roles []string
+	}
+
+	tk, err := parser.ParseWithClaims(token, &claims, keyFunc)
+	if err != nil {
+		return fmt.Errorf("failed to parse token with claims: %v", err)
+	}
+
+	if !tk.Valid {
+		return fmt.Errorf("failed to validate token: %v", err)
+	}
+
+	return nil
 }
 
 // PubKeyID generates a KID from a private key's public key.
-func PublicKeyID(pk *rsa.PrivateKey) (string, error) {
+func makePublicKid(pk *rsa.PrivateKey) (string, error) {
 	pub, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
 	if err != nil {
 		return "", err
