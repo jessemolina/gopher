@@ -1,19 +1,14 @@
-package router
+package api
 
 import (
 	"log/slog"
 	"net/http"
 	"os"
 
-	"github.com/jessemolina/gopher/internal/api/mid"
+	"github.com/jessemolina/gopher/internal/api/monitor"
+	"github.com/jessemolina/gopher/internal/api/safeguard"
 	"github.com/jessemolina/gopher/pkg/web"
 )
-
-// Router is a standardize mux for business api.
-type Router struct {
-	*web.Mux
-	mw []web.Middleware
-}
 
 // Config defines components required for registering Route Groups.
 type Config struct {
@@ -31,10 +26,10 @@ type RouteGroup interface {
 func Build(rg RouteGroup, cfg Config) http.Handler {
 	// TODO Build a mid.Panics mw and append it to Build mux.
 	mux := web.NewMux(
-		mid.Logger(cfg.Log),
-		mid.Meter(),
-		mid.Errors(cfg.Log),
-		mid.Signal(cfg.Shutdown),
+		monitor.Logger(cfg.Log),
+		monitor.Meter(),
+		safeguard.Errors(cfg.Log),
+		safeguard.Signal(cfg.Shutdown),
 	)
 
 	rg.Register(mux, cfg)
