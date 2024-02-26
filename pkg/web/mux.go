@@ -14,7 +14,7 @@ type Mux struct {
 // Handler is a handle function signature that accounts for context and error.
 type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 
-func NewMux (mw ...Middleware) *Mux {
+func NewMux(mw ...Middleware) *Mux {
 	router := &Mux{
 		ServeMux: http.NewServeMux(),
 		mw:       mw,
@@ -24,8 +24,9 @@ func NewMux (mw ...Middleware) *Mux {
 }
 
 // handle wraps middleware functions to the Handler and registers it to the serve mux.
-func (m *Mux) Handle(method string, path string, handler Handler) {
-	handler = wrapMiddleware(handler, m.mw)
+func (m *Mux) Handle(method string, path string, handler Handler, mw ...Middleware) {
+	handler = Wrap(handler, mw)
+	handler = Wrap(handler, m.mw)
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
@@ -44,6 +45,6 @@ func (m *Mux) Handle(method string, path string, handler Handler) {
 }
 
 // GET registers a GET method request to the provided path for the provided custom Handler.
-func (m *Mux) GET(path string, handler Handler) {
-	m.Handle(http.MethodGet, path, handler)
+func (m *Mux) GET(path string, handler Handler, mw ...Middleware) {
+	m.Handle(http.MethodGet, path, handler, mw...)
 }
