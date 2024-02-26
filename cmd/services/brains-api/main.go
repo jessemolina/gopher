@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/jessemolina/gopher/cmd/services/brains-api/v1/groups/tests"
+	"github.com/jessemolina/gopher/internal/api"
 	"github.com/jessemolina/gopher/internal/api/debug"
-	"github.com/jessemolina/gopher/internal/api/router"
 	"github.com/jessemolina/gopher/pkg/config"
 	"github.com/jessemolina/gopher/pkg/telemetry"
 	"go.opentelemetry.io/otel"
@@ -85,13 +85,13 @@ func run(log *slog.Logger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	rc := router.Config{
+	rc := api.Config{
 		Log: log,
 	}
 
 	api := &http.Server{
 		Addr:         ":" + cfg.Server.APIPort,
-		Handler:      router.Build(tests.Routes(), rc),
+		Handler:      api.Build(tests.Routes(), rc),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 		IdleTimeout:  cfg.Server.IdleTimeout,
