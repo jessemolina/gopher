@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 // TODO Fix test for Writing keys/tokens to file.
 func TestWriteToFile(t *testing.T) {
 	pk, _ := GeneratePrivateKey()
@@ -15,9 +14,9 @@ func TestWriteToFile(t *testing.T) {
 
 	rc := MakeClaimSet("Tester", "Gopher Access", time.Hour)
 	roles := []string{"ADMIN"}
-	tk, _ := GenerateToken(pk,rc, roles)
+	tk, _ := GenerateToken(pk, rc, roles)
 
 	WriteToFile(pvt, "private.pem")
 	WriteToFile(pub, "public.pem")
-	WriteToFile(tk, "token")
+	WriteToFile([]byte(tk), "token")
 }
