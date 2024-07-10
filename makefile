@@ -7,7 +7,7 @@ TELEPRESENCE    := datawire/tel2:2.13.1
 KIND_CLUSTER    := gopher-cluster
 NAMESPACE       := brains-system
 SERVICE_NAME	:= brains-api
-REPO_NAME 		:= jessemolina
+REPO_NAME 	:= jessemolina
 APP             := brains
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(REPO_NAME)/$(APP):$(VERSION)
@@ -47,7 +47,7 @@ docker-build:
 	.
 
 docker-logs:
-	docker logs $(RELEASE_NAME)
+	@docker logs $(RELEASE_NAME)
 
 docker-pull:
 	docker pull $(TELEPRESENCE)
