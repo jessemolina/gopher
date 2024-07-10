@@ -35,7 +35,9 @@ func main() {
 // run starts the api service.
 func run(log *slog.Logger) error {
 
-	/* Define service configuration */
+	/*
+		Define service configuration
+	*/
 
 	cfg := struct {
 		Server struct {
@@ -55,17 +57,22 @@ func run(log *slog.Logger) error {
 
 	log.Info("service startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
-	/* Start the debug service */
+	/*
+		Start the debug service
+	*/
 
 	log.Info("starting debug server", "port", cfg.Server.DebugPort)
 
 	go func() {
-		if err := http.ListenAndServe(":"+cfg.Server.DebugPort, debug.DefaultMux()); err != nil {
+		addr := fmt.Sprintf(":%s", cfg.Server.DebugPort)
+		if err := http.ListenAndServe(addr, debug.DefaultMux()); err != nil {
 			log.Error("shutting down debug server", "status", "ERROR")
 		}
 	}()
 
-	/* Enable Telemetry via OTEL */
+	/*
+		Enable Telemetry via OTEL
+	*/
 
 	mp, err := telemetry.NewMeterProvider(telemetry.Config{
 		ServiceName:  service,
@@ -80,18 +87,20 @@ func run(log *slog.Logger) error {
 
 	log.Info("set otel meter provider", "meter", cfg.OTEL.MeterExport)
 
-	/* Start the api service */
+	/*
+		Start the api service
+	*/
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	rc := api.Config{
+	apiCfg := api.Config{
 		Log: log,
 	}
 
-	api := &http.Server{
-		Addr:         ":" + cfg.Server.APIPort,
-		Handler:      api.Build(tests.Routes(), rc),
+	server := &http.Server{
+		Addr:         fmt.Sprintf(":%s", cfg.Server.APIPort),
+		Handler:      api.Build(tests.Routes(), apiCfg),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 		IdleTimeout:  cfg.Server.IdleTimeout,
@@ -101,10 +110,12 @@ func run(log *slog.Logger) error {
 
 	go func() {
 		log.Info("starting api server", "port", cfg.Server.APIPort)
-		serverErrors <- api.ListenAndServe()
+		serverErrors <- server.ListenAndServe()
 	}()
 
-	/* Shutdown the service */
+	/*
+		Shutdown the service
+	*/
 
 	select {
 	case err := <-serverErrors:
