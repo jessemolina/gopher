@@ -2,7 +2,6 @@ package api
 
 import (
 	"log/slog"
-	"net/http"
 	"os"
 
 	"github.com/jessemolina/gopher/internal/api/monitor"
@@ -23,7 +22,7 @@ type RouteGroup interface {
 }
 
 // Build composes an http Handler from the given route group based on Config.
-func Build(rg RouteGroup, cfg Config) http.Handler {
+func Build(rg RouteGroup, cfg Config) *web.Mux {
 	// TODO Build a mid.Panics mw and append it to Build mux.
 	mux := web.NewMux(
 		monitor.Logger(cfg.Log),
